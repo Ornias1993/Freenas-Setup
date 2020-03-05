@@ -1,12 +1,18 @@
 global:
-  debug: yes
+  # Relevant dataset paths, please use the ZFS dataset syntax such as: tank/apps
+  dataset:
+   config: tank/apps
+   iocage: tank/iocage
   jails:
+   # jail version to install
    version: 11.3-RELEASE
 
+# Settings for the individual jails
 jail:
-  test:
-   name: test
+  test5:
+   name: test5
    interfaces: vnet0:bridge31
    ip4_addr: 192.168.31.99/24
    gateway: 192.168.31.1
-   pkgs: "mono","curl","ca_root_nss","nano"
+   # Please use standard space delimited pkg install syntax.
+   pkgs: mono curl ca_root_nss nano
