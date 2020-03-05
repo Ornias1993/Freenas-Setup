@@ -1,0 +1,12 @@
+global:
+  debug: yes
+  jails:
+   version: 11.3-RELEASE
+
+jail:
+  test:
+   name: test
+   interfaces: vnet0:bridge31
+   ip4_addr: 192.168.31.99/24
+   gateway: 192.168.31.1
+   pkgs: "mono","curl","ca_root_nss","nano"
