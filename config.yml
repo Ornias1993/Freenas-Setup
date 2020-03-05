@@ -6,13 +6,17 @@ global:
   jails:
    # jail version to install
    version: 11.3-RELEASE
+   # Global pkgs to install in all jails.
+   # Please use standard space delimited pkg install syntax.
+   pkgs: curl ca_root_nss nano
 
 # Settings for the individual jails
 jail:
-  test5:
-   name: test5
+  # use the same jailname on both sides of this variable example: example
+  test10: test10
    interfaces: vnet0:bridge31
    ip4_addr: 192.168.31.99/24
    gateway: 192.168.31.1
+   # Jail specific pkgs. 
    # Please use standard space delimited pkg install syntax.
-   pkgs: mono curl ca_root_nss nano
+   pkgs: mono
