@@ -1,0 +1,24 @@
+global:
+  # Relevant dataset paths, please use the ZFS dataset syntax such as: tank/apps
+  dataset:
+   config: tank/apps
+   iocage: tank/iocage
+  jails:
+   # jail version to install
+   version: 11.3-RELEASE
+   # Global pkgs to install in all jails.
+   # Please use standard space delimited pkg install syntax.
+   pkgs: curl ca_root_nss
+
+# Settings for the individual jails
+jail:
+  # use the same jailname on both sides of this variable example: example
+  jackett: jackett
+   #interfaces is optional and will be autmatically replace with vnet0:bridge0 if not present
+   #interfaces: vnet0:bridge0
+   #ip4_addr: 192.168.1.99/24
+   #gateway: 192.168.1.1
+   dhcp: on
+   # Jail specific pkgs. 
+   # Please use standard space delimited pkg install syntax.
+   pkgs: mono

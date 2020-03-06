@@ -1,6 +1,7 @@
-iocage exec jackett service jackett stop
-#TODO insert code to update jacket itself here
-iocage exec jackett chown -R jackett:jackett /usr/local/share/Jackett /config
-cp ${SCRIPT_DIR}/jails/test10/includes/jackett.rc /mnt/${global_dataset_iocage}/jails/test10/root/usr/local/etc/rc.d/jackett
-iocage exec jackett chmod u+x /usr/local/etc/rc.d/jackett
-iocage exec jackett service jackett restart
+iocage exec test10 service sonarr stop
+
+iocage exec test10 chown -R sonarr:sonarr /usr/local/share/NzbDrone /config
+#TODO insert code to update sonarr itself here
+cp ${SCRIPT_DIR}/jails/test10/includes/sonarr.rc /mnt/${global_dataset_iocage}/jails/test10/root/usr/local/etc/rc.d/sonarr
+iocage exec test10 chmod u+x /usr/local/etc/rc.d/sonarr
+iocage exec test10 service sonarr restart
