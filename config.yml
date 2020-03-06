@@ -22,9 +22,9 @@ jail:
   # use the same jailname on both sides of this variable example: example
   test10: test10
    # interfaces is optional and will be autmatically replace with vnet0:bridge0 if not present
-   interfaces: vnet0:bridge31
-   ip4_addr: 192.168.31.99/24
-   gateway: 192.168.31.1
+   interfaces: vnet0:bridge30
+   ip4_addr: 192.168.30.99/24
+   gateway: 192.168.30.1
    # dhcp: on
    # Jail specific pkgs. 
    # Please use standard space delimited pkg install syntax.
