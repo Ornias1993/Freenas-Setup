@@ -15,7 +15,7 @@ if ! [ $(id -u) = 0 ]; then
 fi
 
 # Auto Update
-BRANCH="std_config"
+BRANCH="master"
 gitupdate ${BRANCH}
 
 # If no option is given, point to the help menu
