@@ -1,7 +1,9 @@
+#!/usr/local/bin/bash
+# This file contains the update script for radarr
+
 iocage exec radarr service radarr stop
-iocage update radarr
-iocage exec radarr "pkg update && pkg upgrade -y"
+#TODO insert code to update radarr itself here
 iocage exec radarr chown -R radarr:radarr /usr/local/share/Radarr /config
-cp ../includes/radarr-conf/radarr.rc /mnt/tank/iocage/jails/radarr/root/usr/local/etc/rc.d/radarr
+cp ${SCRIPT_DIR}/jails/radarr/includes/radarr.rc /mnt/${global_dataset_iocage}/jails/radarr/root/usr/local/etc/rc.d/radarr
 iocage exec radarr chmod u+x /usr/local/etc/rc.d/radarr
 iocage exec radarr service radarr restart

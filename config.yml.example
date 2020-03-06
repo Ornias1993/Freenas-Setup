@@ -10,15 +10,42 @@ global:
    # Please use standard space delimited pkg install syntax.
    pkgs: curl ca_root_nss
 
-# Settings for the individual jails
-jail:
-  # use the same jailname on both sides of this variable example: example
-  jackett: jackett
-   #interfaces is optional and will be autmatically replace with vnet0:bridge0 if not present
-   #interfaces: vnet0:bridge0
-   #ip4_addr: 192.168.1.99/24
-   #gateway: 192.168.1.1
-   dhcp: on
-   # Jail specific pkgs. 
-   # Please use standard space delimited pkg install syntax.
-   pkgs: mono
+
+# Example configuration, showing how to customise network config.
+# Ese the same jailname on both sides of this variable example: example
+example: example
+  #interfaces is optional and will be autmatically replace with vnet0:bridge0 if not present
+  interfaces: vnet0:bridge0
+  ip4_addr: 192.168.1.99/24
+  gateway: 192.168.1.1
+  # Jail specific pkgs. 
+  # Please use standard space delimited pkg install syntax.
+  pkgs: mono
+ 
+jackett: jackett
+  pkgs: mono
+ 
+radarr: radarr
+  pkgs: mono
+ 
+sonarr: sonarr
+  pkgs: mono
+ 
+lidarr: lidarr
+  pkgs: mono
+ 
+transmission: transmission
+  pkgs: bash unzip unrar transmission
+  
+plex: plex
+  plexpass: false
+  pkgs: plexmediaserver
+  
+tautulli: tautulli
+  pkgs: python2 py27-sqlite3 py27-openssl git
+  
+organizr: organizr
+  pkgs: nginx php72 php72-filter php72-curl php72-hash php72-json php72-openssl php72-pdo php72-pdo_sqlite php72-session php72-simplexml php72-sqlite3 php72-zip git
+  
+kms: kms
+  pkgs: bash py37-tkinter py37-pip py37-sqlite3 git

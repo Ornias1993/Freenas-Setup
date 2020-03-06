@@ -1,26 +1,65 @@
-#!/bin/sh
+#!/usr/local/bin/bash
+# This file contains the install script for plex
 
-echo '{"pkgs":["plexmediaserver-plexpass","ca_root_nss","nano"]}' > /tmp/pkg.json
-iocage create -n "plex" -p /tmp/pkg.json -r 11.3-RELEASE interfaces="vnet0:bridge30" ip4_addr="vnet0|192.168.30.26/24" defaultrouter="192.168.30.1" vnet="on" allow_raw_sockets="1" boot="on"
-rm /tmp/pkg.json
-iocage exec plex "mkdir -p /usr/local/etc/pkg/repos"
-cp ../includes/plex-conf/FreeBSD.conf /mnt/tank/iocage/jails/plex/root/usr/local/etc/pkg/repos/FreeBSD.conf
-iocage exec plex mkdir -p /config
-iocage exec plex mkdir -p /mnt/library
-iocage fstab -a plex /mnt/tank/apps/plex /config nullfs rw 0 0
-iocage fstab -a plex /mnt/tank/Library /mnt/library nullfs ro 0 0
+iocage exec plex mkdir -p /usr/local/etc/pkg/repos
+iocage exec plex mkdir -p /mnt/media
+iocage exec plex mkdir -p /mnt/media/movies
+iocage exec plex mkdir -p /mnt/media/music
+iocage exec plex mkdir -p /mnt/media/shows
+
+# Change to to more frequent FreeBSD repo to stay up-to-date with plex more.
+cp ${SCRIPT_DIR}/jails/plex/includes/FreeBSD.conf /mnt/${global_dataset_iocage}/jails/plex/root/usr/local/etc/pkg/repos/FreeBSD.conf
+
+
+# Check if datasets for media librarys exist, create them if they do not.
+if [ ! -d "/mnt/${global_dataset_media}" ]; then
+	echo "Media dataset does not exist... Creating... ${global_dataset_media}"
+	zfs create ${global_dataset_media}
+fi
+
+iocage fstab -a plex /mnt/${global_dataset_media} /mnt/media nullfs rw 0 0
+
+if [ ! -d "/mnt/${global_dataset_media}/shows" ]; then
+	echo "TV Shows dataset does not exist... Creating... ${global_dataset_media}/shows"
+	zfs create ${global_dataset_media}/shows
+fi
+
+iocage fstab -a plex /mnt/${global_dataset_media}/shows /mnt/media/shows nullfs rw 0 0
+
+if [ ! -d "/mnt/${global_dataset_media}/music" ]; then
+	echo "music dataset does not exist... Creating... ${global_dataset_media}/music"
+	zfs create ${global_dataset_media}/music
+fi
+
+iocage fstab -a plex /mnt/${global_dataset_media}/music /mnt/media/music nullfs rw 0 0
+
+if [ ! -d "/mnt/${global_dataset_media}/movies" ]; then
+	echo "movies dataset does not exist... Creating... ${global_dataset_media}/movies"
+	zfs create ${global_dataset_media}/movies
+fi
+
+iocage fstab -a plex /mnt/${global_dataset_media}/movies /mnt/media/movies nullfs rw 0 0
+
+
 iocage exec plex chown -R plex:plex /config
-iocage exec plex sysrc "plexmediaserver_plexpass_enable=YES"
-iocage exec plex sysrc plexmediaserver_plexpass_support_path="/config"
-iocage exec plex pkg update -y
+
+# Force update pkg to get latest plex version
+iocage exec plex pkg update
 iocage exec plex pkg upgrade -y
-iocage exec plex chown -R plex:plex /usr/local/share/plexmediaserver-plexpass/
-iocage exec plex service plexmediaserver_plexpass start
-sleep 10s
-echo "Waiting 20s to stop plex"
-iocage stop plex
-sleep 10s
-echo "Waiting 20s to start plex"
-iocage start plex
-iocage exec plex service plexmediaserver_plexpass start
+
+# Run different install procedures depending on Plex vs Plexpass
+if [ "$plex_plexpass" == "true" ]; then
+	echo "plexpass enabled in config.yml... using plexpass for install"
+	iocage exec plex sysrc "plexmediaserver_plexpass_enable=YES"
+	iocage exec plex sysrc plexmediaserver_plexpass_support_path="/config"
+	iocage exec plex chown -R plex:plex /usr/local/share/plexmediaserver-plexpass/
+	iocage exec plex service plexmediaserver_plexpass restart
+else
+	echo "plexpass disabled in config.yml... NOT using plexpass for install"
+	iocage exec plex sysrc "plexmediaserver_enable=YES"
+	iocage exec plex sysrc plexmediaserver_support_path="/config"
+	iocage exec plex chown -R plex:plex /usr/local/share/plexmediaserver/
+	iocage exec plex service plexmediaserver restart
+fi
+
 echo "Finished installing plex"
