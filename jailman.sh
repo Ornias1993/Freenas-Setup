@@ -15,7 +15,7 @@ if ! [ $(id -u) = 0 ]; then
 fi
 
 # Auto Update
-BRANCH="dev"
+BRANCH="cleanup-01"
 gitupdate ${BRANCH}
 
 # If no option is given, point to the help menu
