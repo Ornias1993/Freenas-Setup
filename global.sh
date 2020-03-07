@@ -101,3 +101,30 @@ else
 fi	
 	
 }
+
+# $1 = jail name
+# $2 = Dataset
+# $3 = Target mountpoint
+# $4 = fstab prefernces
+export -f createmount() {
+	if [ -z "$2" ] ; then
+		echo "No Dataset specified"
+		exit 1
+	else
+		if [ ! -d "/mnt/$2" ]; then
+			echo "TV Shows dataset does not exist... Creating... $2"
+			zfs create $2
+		fi
+
+		if [ -n "$1" ] && [ -n "$3" ]; then
+			if [ -n "$2" ]; then
+				iocage fstab -a $1 /mnt/$2 $3 $4
+			else
+				iocage fstab -a $1 /mnt/$2 $3 nullfs rw 0 0
+			fi
+		else
+			echo "Missing Jail Name or Mount target, skipping mount"
+		fi
+
+	fi
+}
