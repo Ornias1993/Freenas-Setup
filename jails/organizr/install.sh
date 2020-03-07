@@ -24,7 +24,6 @@ else
 	openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=localhost" -keyout /mnt/${global_dataset_config}/organizr/cert/Organizr-Cert.key -out /mnt/${global_dataset_config}/organizr/cert/Organizr-Cert.crt
 fi
 
-
 iocage exec organizr git clone https://github.com/causefx/Organizr.git /usr/local/www/Organizr
 iocage exec organizr chown -R www:www /usr/local/www /config /usr/local/etc/nginx/nginx.conf /usr/local/etc/nginx/custom
 iocage exec organizr ln -s /config/config.php /usr/local/www/Organizr/api/config/config.php

@@ -1,35 +1,13 @@
 #!/usr/local/bin/bash
 # This file contains the install script for sonarr
 
-iocage exec sonarr mkdir -p /mnt/shows
-iocage exec sonarr mkdir -p /mnt/fetched
-
 # Check if dataset for completed download and it parent dataset exist, create if they do not.
-if [ ! -d "/mnt/${global_dataset_downloads}" ]; then
-	echo "Downloads dataset does not exist... Creating... ${global_dataset_downloads}"
-	zfs create ${global_dataset_downloads}
-fi
-
-if [ ! -d "/mnt/${global_dataset_downloads}/complete" ]; then
-	echo "Completed Downloads dataset does not exist... Creating... ${global_dataset_downloads}/complete"
-	zfs create ${global_dataset_downloads}/complete
-fi
-
-iocage fstab -a sonarr /mnt/${global_dataset_downloads}/complete /mnt/fetched nullfs rw 0 0
+createmount sonarr ${global_dataset_downloads}
+createmount sonarr ${global_dataset_downloads}/complete /mnt/fetched
 
 # Check if dataset for media library and the dataset for tv shows exist, create if they do not.
-if [ ! -d "/mnt/${global_dataset_media}" ]; then
-	echo "Media dataset does not exist... Creating... ${global_dataset_media}"
-	zfs create ${global_dataset_media}
-fi
-
-if [ ! -d "/mnt/${global_dataset_media}/shows" ]; then
-	echo "TV Shows dataset does not exist... Creating... ${global_dataset_media}/shows"
-	zfs create ${global_dataset_media}/shows
-fi
-
-iocage fstab -a sonarr /mnt/${global_dataset_media}/shows /mnt/shows nullfs rw 0 0
-
+createmount sonarr ${global_dataset_media}
+createmount sonarr ${global_dataset_media}/shows /mnt/shows
 
 iocage exec sonarr ln -s /usr/local/bin/mono /usr/bin/mono
 iocage exec sonarr "fetch http://download.sonarr.tv/v2/master/mono/NzbDrone.master.tar.gz -o /usr/local/share"

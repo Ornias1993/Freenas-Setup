@@ -1,34 +1,13 @@
 #!/usr/local/bin/bash
 # This file contains the install script for lidarr
 
-iocage exec lidarr mkdir -p /mnt/music
-iocage exec lidarr mkdir -p /mnt/fetched
-
 # Check if dataset for completed download and it parent dataset exist, create if they do not.
-if [ ! -d "/mnt/${global_dataset_downloads}" ]; then
-	echo "Downloads dataset does not exist... Creating... ${global_dataset_downloads}"
-	zfs create ${global_dataset_downloads}
-fi
+createmount lidarr ${global_dataset_downloads}
+createmount lidarr ${global_dataset_downloads}/complete /mnt/fetched
 
-if [ ! -d "/mnt/${global_dataset_downloads}/complete" ]; then
-	echo "Completed Downloads dataset does not exist... Creating... ${global_dataset_downloads}/complete"
-	zfs create ${global_dataset_downloads}/complete
-fi
-
-iocage fstab -a lidarr /mnt/${global_dataset_downloads}/complete /mnt/fetched nullfs rw 0 0
-
-# Check if dataset for media library and the dataset for music exist, create if they do not.
-if [ ! -d "/mnt/${global_dataset_media}" ]; then
-	echo "Media dataset does not exist... Creating... ${global_dataset_media}"
-	zfs create ${global_dataset_media}
-fi
-
-if [ ! -d "/mnt/${global_dataset_media}/music" ]; then
-	echo "Music dataset does not exist... Creating... ${global_dataset_media}/music"
-	zfs create ${global_dataset_media}/music
-fi
-
-iocage fstab -a lidarr /mnt/${global_dataset_media}/music /mnt/music nullfs rw 0 0
+# Check if dataset for media library and the dataset for movies exist, create if they do not.
+createmount lidarr ${global_dataset_media}
+createmount lidarr ${global_dataset_media}/music /mnt/music
 
 
 iocage exec lidarr ln -s /usr/local/bin/mono /usr/bin/mono
