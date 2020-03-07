@@ -110,7 +110,7 @@ else
 		if [ -f "${SCRIPT_DIR}/jails/$jail/install.sh" ]
 		then
 			echo "Installing $jail"
-			${SCRIPT_DIR}/jailcreate.sh $jail && ${SCRIPT_DIR}/jails/$jail/install.sh
+			jailcreate $jail && ${SCRIPT_DIR}/jails/$jail/install.sh
 		else
 			echo "Missing install script for $jail in ${SCRIPT_DIR}/jails/$jail/install.sh"
 		fi
@@ -127,7 +127,7 @@ else
 		if [ -f "${SCRIPT_DIR}/jails/$jail/install.sh" ]
 		then
 			echo "Reinstalling $jail"
-			iocage destroy -f $jail && ${SCRIPT_DIR}/jailcreate.sh $jail && ${SCRIPT_DIR}/jails/$jail/install.sh
+			iocage destroy -f $jail && jailcreate $jail && ${SCRIPT_DIR}/jails/$jail/install.sh
 		else
 			echo "Missing install script for $jail in ${SCRIPT_DIR}/jails/$jail/update.sh"
 		fi
