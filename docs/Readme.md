@@ -81,3 +81,7 @@ https://github.com/SystemRage/py-kms
 
 ### LICENCE
 This work is dual licenced under GPLv2 and BSD-2 clause
+
+## Sub-Licences
+Some sub-modules available under "jails" might be licenced under a different licence.
+Please be aware of this and take note of any LICENCE files signaling a differently licenced sub-module.
