@@ -108,23 +108,25 @@ fi
 # $4 = fstab prefernces
 createmount() {
 	if [ -z "$2" ] ; then
-		echo "No Dataset specified"
+		echo "ERROR: No Dataset specified to create and/or mount"
 		exit 1
 	else
 		if [ ! -d "/mnt/$2" ]; then
-			echo "TV Shows dataset does not exist... Creating... $2"
+			echo "Dataset does not exist... Creating... $2"
 			zfs create $2
+		else
+			echo "Dataset already exists, skipping creation of $2"
 		fi
 
 		if [ -n "$1" ] && [ -n "$3" ]; then
-			iocage exec $1 mkdir -p /mnt/$2
+			iocage exec $1 mkdir -p $3
 			if [ -n "$4" ]; then
 				iocage fstab -a $1 /mnt/$2 $3 $4
 			else
 				iocage fstab -a $1 /mnt/$2 $3 nullfs rw 0 0
 			fi
 		else
-			echo "Missing Jail Name or Mount target, skipping mount"
+			echo "No Jail Name or Mount target specified, not mounting dataset"
 		fi
 
 	fi
