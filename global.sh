@@ -106,7 +106,7 @@ fi
 # $2 = Dataset
 # $3 = Target mountpoint
 # $4 = fstab prefernces
-export -f createmount() {
+createmount() {
 	if [ -z "$2" ] ; then
 		echo "No Dataset specified"
 		exit 1
@@ -129,3 +129,4 @@ export -f createmount() {
 
 	fi
 }
+export -f createmount
