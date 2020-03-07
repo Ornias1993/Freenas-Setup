@@ -4,17 +4,17 @@
 
 
 # Initialise defaults
-JAIL_NAME="testnc"
-JAIL_IP="$(sed 's|\(.*\)/.*|\1|' <<<"${testnc_ip4_addr}" )"
-DATABASE="$testnc_database"
-INCLUDES_PATH="${SCRIPT_DIR}/jails/testnc/includes"
-STANDALONE_CERT=$testnc_standalone_cert
-SELFSIGNED_CERT=$testnc_selfsigned_cert
-DNS_CERT=$testnc_dns_cert
-NO_CERT=$testnc_no_cert
-DL_FLAGS=$testnc_dl_flags
-DNS_SETTING=$testnc_dns_settings
-CERT_EMAIL=$testnc_cert_email
+JAIL_NAME="nextcloud"
+JAIL_IP="$(sed 's|\(.*\)/.*|\1|' <<<"${nextcloud_ip4_addr}" )"
+DATABASE="$nextcloud_database"
+INCLUDES_PATH="${SCRIPT_DIR}/jails/nextcloud/includes"
+STANDALONE_CERT=$nextcloud_standalone_cert
+SELFSIGNED_CERT=$nextcloud_selfsigned_cert
+DNS_CERT=$nextcloud_dns_cert
+NO_CERT=$nextcloud_no_cert
+DL_FLAGS=$nextcloud_dl_flags
+DNS_SETTING=$nextcloud_dns_settings
+CERT_EMAIL=$nextcloud_cert_email
 
 DB_ROOT_PASSWORD=$(openssl rand -base64 16)
 DB_PASSWORD=$(openssl rand -base64 16)
@@ -34,17 +34,17 @@ ADMIN_PASSWORD=$(openssl rand -base64 12)
 
 
 # Check that necessary variables were set by nextcloud-config
-if [ -z "${testnc_ip4_addr}" ]; then
+if [ -z "${nextcloud_ip4_addr}" ]; then
   echo 'Configuration error: The Nextcloud jail does NOT accept DHCP'
   echo 'Please reinstall using a fixed IP adress'
   exit 1
 fi
 
-if [ -z "${testnc_time_zone}" ]; then
+if [ -z "${nextcloud_time_zone}" ]; then
   echo 'Configuration error: TIME_ZONE must be set'
   exit 1
 fi
-if [ -z "${testnc_host_name}" ]; then
+if [ -z "${nextcloud_host_name}" ]; then
   echo 'Configuration error: HOST_NAME must be set'
   exit 1
 fi
@@ -185,7 +185,7 @@ iocage exec "${JAIL_NAME}" chown -R www:www /usr/local/www/nextcloud/
 if [ $SELFSIGNED_CERT -eq 1 ]; then
   iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/pki/tls/private
   iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/pki/tls/certs
-  openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=${testnc_host_name}" -keyout "${INCLUDES_PATH}"/privkey.pem -out "${INCLUDES_PATH}"/fullchain.pem
+  openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=${nextcloud_host_name}" -keyout "${INCLUDES_PATH}"/privkey.pem -out "${INCLUDES_PATH}"/fullchain.pem
   iocage exec "${JAIL_NAME}" cp /mnt/includes/privkey.pem /usr/local/etc/pki/tls/private/privkey.pem
   iocage exec "${JAIL_NAME}" cp /mnt/includes/fullchain.pem /usr/local/etc/pki/tls/certs/fullchain.pem
 fi
@@ -210,10 +210,10 @@ fi
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/caddy /usr/local/etc/rc.d/
 
 
-iocage exec "${JAIL_NAME}" sed -i '' "s/yourhostnamehere/${testnc_host_name}/" /usr/local/www/Caddyfile
+iocage exec "${JAIL_NAME}" sed -i '' "s/yourhostnamehere/${nextcloud_host_name}/" /usr/local/www/Caddyfile
 iocage exec "${JAIL_NAME}" sed -i '' "s/DNS-PLACEHOLDER/${DNS_SETTING}/" /usr/local/www/Caddyfile
 iocage exec "${JAIL_NAME}" sed -i '' "s/JAIL-IP/${JAIL_IP}/" /usr/local/www/Caddyfile
-iocage exec "${JAIL_NAME}" sed -i '' "s|mytimezone|${testnc_time_zone}|" /usr/local/etc/php.ini
+iocage exec "${JAIL_NAME}" sed -i '' "s|mytimezone|${nextcloud_time_zone}|" /usr/local/etc/php.ini
 
 iocage exec "${JAIL_NAME}" sysrc caddy_enable="YES"
 iocage exec "${JAIL_NAME}" sysrc caddy_cert_email="${CERT_EMAIL}"
@@ -269,7 +269,7 @@ else
 	fi
 	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ db:add-missing-indices"
 	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ db:convert-filecache-bigint --no-interaction"
-	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set logtimezone --value=\"${testnc_time_zone}\""
+	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set logtimezone --value=\"${nextcloud_time_zone}\""
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set log_type --value="file"'
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set logfile --value="/var/log/nextcloud.log"'
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set loglevel --value="2"'
@@ -279,13 +279,13 @@ else
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set redis port --value=0 --type=integer'
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set memcache.locking --value="\OC\Memcache\Redis"'
 	if [ $NO_CERT -eq 1 ]; then
-		iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"http://${testnc_host_name}/\""
+		iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"http://${nextcloud_host_name}/\""
 	else
-		iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"https://${testnc_host_name}/\""
+		iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"https://${nextcloud_host_name}/\""
 	fi
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set htaccess.RewriteBase --value="/"'
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ maintenance:update:htaccess'
-	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set trusted_domains 1 --value=\"${testnc_host_name}\""
+	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set trusted_domains 1 --value=\"${nextcloud_host_name}\""
 	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set trusted_domains 2 --value=\"${JAIL_IP}\""
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ app:enable encryption'
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ encryption:enable'
@@ -306,9 +306,9 @@ iocage fstab -r "${JAIL_NAME}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
 # Done!
 echo "Installation complete!"
 if [ $NO_CERT -eq 1 ]; then
-  echo "Using your web browser, go to http://${testnc_host_name} to log in"
+  echo "Using your web browser, go to http://${nextcloud_host_name} to log in"
 else
-  echo "Using your web browser, go to https://${testnc_host_name} to log in"
+  echo "Using your web browser, go to https://${nextcloud_host_name} to log in"
 fi
 
 if [ "${REINSTALL}" == "true" ]; then
