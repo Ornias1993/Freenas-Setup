@@ -84,19 +84,10 @@ else
 
 	rm /tmp/pkg.json
 	echo "creating jail config directory"
-	iocage exec $1 mkdir -p /config
-
-	if [ ! -d "/mnt/${global_dataset_config}" ]; then
-		echo "Config root dataset does not exist... Creating... ${global_dataset_config}"
-		zfs create ${global_dataset_config}
-	fi
 	
-	if [ ! -d "/mnt/${global_dataset_config}/$1" ]; then
-		echo "Config dataset does not exist... Creating... ${global_dataset_config}/$1"
-		zfs create ${global_dataset_config}/$1
-	fi
+	createmount $1 ${global_dataset_config}
+	createmount $1 ${global_dataset_config}/$1 /config
 	
-	iocage fstab -a $1 /mnt/${global_dataset_config}/$1 /config nullfs rw 0 0
 	echo "Jail creation completed for $1"
 fi	
 	
