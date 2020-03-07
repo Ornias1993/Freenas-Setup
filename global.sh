@@ -117,7 +117,8 @@ export -f createmount() {
 		fi
 
 		if [ -n "$1" ] && [ -n "$3" ]; then
-			if [ -n "$2" ]; then
+			iocage exec $1 mkdir -p /mnt/$2
+			if [ -n "$4" ]; then
 				iocage fstab -a $1 /mnt/$2 $3 $4
 			else
 				iocage fstab -a $1 /mnt/$2 $3 nullfs rw 0 0
