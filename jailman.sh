@@ -145,7 +145,8 @@ else
 		if [ -f "${SCRIPT_DIR}/jails/$jail/update.sh" ]
 		then
 			echo "Updating $jail"
-			iocage update $jail && iocage exec $jail "pkg update && pkg upgrade -y" && ${SCRIPT_DIR}/jails/$jail/update.sh
+			iocage update $jail
+			iocage exec $jail "pkg update && pkg upgrade -y" && ${SCRIPT_DIR}/jails/$jail/update.sh
 			iocage restart $jail
 		else
 			echo "Missing update script for $jail in ${SCRIPT_DIR}/jails/$jail/update.sh"
