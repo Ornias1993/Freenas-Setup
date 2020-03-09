@@ -64,7 +64,7 @@ if [ -z "${!jailname}" ]; then
 	exit 1
 else
 	echo "Creating jail for $1"
-	pkgs="$(sed 's/[^[:space:]]\{1,\}/"&"/g;s/ /,/g' <<<"${!jailpkgs} ${global_jails_pkgs}")"
+	pkgs="$(sed 's/[^[:space:]]\{1,\}/"&"/g;s/ /,/g' <<<"${global_jails_pkgs} ${!jailpkgs}")"
 	echo '{"pkgs":['${pkgs}']}' > /tmp/pkg.json
 	if [ "${setdhcp}" == "on" ]
 	then
