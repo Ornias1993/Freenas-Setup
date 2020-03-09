@@ -15,7 +15,7 @@ if ! [ $(id -u) = 0 ]; then
 fi
 
 # Auto Update
-BRANCH="dev"
+BRANCH="jails/mariadb"
 gitupdate ${BRANCH}
 
 # If no option is given, point to the help menu
@@ -148,6 +148,7 @@ else
 			iocage update $jail
 			iocage exec $jail "pkg update && pkg upgrade -y" && ${SCRIPT_DIR}/jails/$jail/update.sh
 			iocage restart $jail
+			iocage start $jail
 		else
 			echo "Missing update script for $jail in ${SCRIPT_DIR}/jails/$jail/update.sh"
 		fi
