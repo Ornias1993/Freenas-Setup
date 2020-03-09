@@ -112,7 +112,6 @@ To make your experience making changes to Jailman as easy as possible, we alread
 
 But above all: Have fun building it!
 
-
 ## LICENCE
 This work is dual licenced under GPLv2 and BSD-2 clause
 
@@ -123,4 +122,3 @@ Please be aware of this and take note of any LICENCE files signaling a different
 
 ---
 ![built-with-resentment](http://forthebadge.com/images/badges/built-with-resentment.svg)       ![contains-technical-debt](http://forthebadge.com/images/badges/contains-technical-debt.svg)
-
