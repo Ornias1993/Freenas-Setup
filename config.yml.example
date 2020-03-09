@@ -50,6 +50,7 @@ organizr: organizr
 kms: kms
   pkgs: bash py37-tkinter py37-pip py37-sqlite3 git
 
+
 nextcloud: nextcloud
   ip4_addr: 192.168.1.99/24
   gateway: 192.168.1.1
@@ -64,3 +65,11 @@ nextcloud: nextcloud
   dl_flags: ""
   dns_settings: ""
   cert_email: "placeholder@holdplace.org"
+  database: mariadb
+#  db_database:
+#  db_user:
+#  db_password
+#  db_host
+  
+mariadb: mariadb
+  ip4_addr: 192.168.1.5
