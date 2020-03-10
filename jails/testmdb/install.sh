@@ -1,6 +1,5 @@
 #!/usr/local/bin/bash
 # This script installs the current release of Mariadb and PhpMyAdmin into a created jail
-
 #####
 # 
 # Init and Mounts
@@ -14,9 +13,7 @@ INCLUDES_PATH="${SCRIPT_DIR}/jails/testmdb/includes"
 CERT_EMAIL=${testmdb_cert_email}
 DB_ROOT_PASSWORD=${testmdb_db_root_password}
 DB_NAME="MariaDB"
-DB_HOST="localhost:/tmp/mysql.sock"
-DL_FLAGS="http.git"
-
+DL_FLAGS=""
 
 # Check that necessary variables were set by nextcloud-config
 if [ -z "${testmdb_ip4_addr}" ]; then
@@ -32,7 +29,11 @@ if [ "$(ls -A "/mnt/${global_dataset_config}/${JAIL_NAME}/db")" ]; then
 	REINSTALL="true"
 fi
 
+# Mount database dataset and set zfs preferences
 createmount ${JAIL_NAME} ${global_dataset_config}/${JAIL_NAME}/db /var/db/mysql
+zfs set recordsize=16K ${global_dataset_config}/${JAIL_NAME}/db
+zfs set primarycache=metadata ${global_dataset_config}/${JAIL_NAME}/db
+
 iocage exec "${JAIL_NAME}" chown -R 88:88 /var/db/mysql
 
 # Install includes fstab
@@ -44,7 +45,7 @@ iocage exec "${JAIL_NAME}" chown -R www:www /usr/local/www/phpmyadmin
 
 #####
 # 
-# Install mariadb, Caddy and Php my admin
+# Install mariadb, Caddy and PhpMyAdmin
 #
 #####
 
@@ -85,11 +86,11 @@ else
 	iocage exec "${JAIL_NAME}" mysql -u root -e "UPDATE mysql.user SET Password=PASSWORD('${DB_ROOT_PASSWORD}') WHERE User='root';"
 	iocage exec "${JAIL_NAME}" mysqladmin reload
 fi
-	iocage exec "${JAIL_NAME}" cp -f /mnt/includes/my.cnf /root/.my.cnf
-	iocage exec "${JAIL_NAME}" sed -i '' "s|mypassword|${DB_ROOT_PASSWORD}|" /root/.my.cnf
+iocage exec "${JAIL_NAME}" cp -f /mnt/includes/my.cnf /root/.my.cnf
+iocage exec "${JAIL_NAME}" sed -i '' "s|mypassword|${DB_ROOT_PASSWORD}|" /root/.my.cnf
 
-	# Save passwords for later reference
-	iocage exec "${JAIL_NAME}" echo "${DB_NAME} root password is ${DB_ROOT_PASSWORD}" > /root/${JAIL_NAME}_db_password.txt
+# Save passwords for later reference
+iocage exec "${JAIL_NAME}" echo "${DB_NAME} root password is ${DB_ROOT_PASSWORD}" > /root/${JAIL_NAME}_db_password.txt
 	
 
 # Don't need /mnt/includes any more, so unmount it
@@ -103,17 +104,10 @@ if [ "${REINSTALL}" == "true" ]; then
 	echo "You did a reinstall, please use your old database and account credentials"
 else
 
-	echo "Default user is admin, password is ${ADMIN_PASSWORD}"
-	echo ""
-
 	echo "Database Information"
 	echo "--------------------"
-	echo "Database user = ${DB_USER}"
-	echo "Database password = ${DB_PASSWORD}"
-	if [ "${DATABASE}" = "mariadb" ] || [ "${DATABASE}" = "pgsql" ]; then
-		echo "The ${DB_NAME} root password is ${DB_ROOT_PASSWORD}"
+	echo "The ${DB_NAME} root password is ${DB_ROOT_PASSWORD}"
 	fi
 	echo ""
 	echo "All passwords are saved in /root/${JAIL_NAME}_db_password.txt"
 fi
-
