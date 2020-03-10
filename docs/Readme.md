@@ -1,15 +1,19 @@
+
+
+### JailMan is a collection of shell scripts designed to make it easier to install all sorts of iocage Jails on FreeNAS.
+
+---
+
+
+[![GitHub last commit](https://img.shields.io/github/last-commit/ornias1993/jailman/dev.svg)](https://github.com/ornias1993/jailman/commits/dev) [![Krihelimeter](http://www.krihelinator.xyz/badge/unitystation/unitystation)](http://www.krihelinator.xyz/repositories/unitystation/unitystation) [![GitHub Release](https://img.shields.io/github/release/ornias1993/jailman.svg)](https://github.com/ornias1993/jailman/releases/latest) [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://github.com/ornias1993/jailman/blob/master/docs/LICENSE.GPLV2) [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://github.com/ornias1993/jailman/blob/master/docs/LICENSE.BSD2)
+
 ## Intro
 
-JailMan is a collection of shell scripts designed to make it easier to install iocage Jails on FreeNAS and/or TrueNAS core.
-Inspirations for this script are: Docker, FreeNAS plugins, Pentaflake's guide and "freenas-iocage-nextcloud" by danb35.
-The updater is inspired by the updater designed for ZFS-Compression-Test by Ornias1993.
+There are a lot of great scripts out there to create all sorts of custom jails on FreeNAS. Sadly enough, they all take their own approach to configuration, which lead to a lot of time wasted configuring all sorts of different scripts.
 
-The goal of this project is to be able to install, update, reinstall, upgrade and delete most of your services by just running a single command.
-While doing this we aim for a "docker like" scenario, where the jail is completely disposable and all configuration is saved outside of the jail.
+We do not aim to be some sort of XKCD like "solution to replace all solutions", but aim to simply improve, iterate and integrate the great work others have already put forward.
 
-Example: 
-If something goes wrong with Jackett, you just use:
-'jailman -r jackett' 
+The goal of this project is to be able to install, update, reinstall, upgrade and delete most of your services by just running a single command using a single config file. While doing this we aim for a "docker like" scenario, where the jail is completely disposable and all configuration is saved outside of the jail.
 
 
 ## Install
@@ -67,6 +71,10 @@ Basic means: The same setup as a FreeNAS plugin would've, DHCP on bridge0.
 
 - organizr
 - py-kms
+- nextcloud
+
+### Backend
+- mariadb
 
 ### Downloads
 
@@ -97,9 +105,14 @@ https://github.com/SystemRage/py-kms
 
 
 
-### LICENCE
+## LICENCE
 This work is dual licenced under GPLv2 and BSD-2 clause
 
-## Sub-Licences
+### Sub-Licences
 Some sub-modules available under "jails" might be licenced under a different licence.
 Please be aware of this and take note of any LICENCE files signaling a differently licenced sub-module.
+
+
+
+---
+![built-with-resentment](http://forthebadge.com/images/badges/built-with-resentment.svg)       ![contains-technical-debt](http://forthebadge.com/images/badges/contains-technical-debt.svg)
