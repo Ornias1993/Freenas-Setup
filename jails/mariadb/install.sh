@@ -7,16 +7,16 @@
 #####
 
 # Initialise defaults
-JAIL_NAME="testmdb"
-JAIL_IP="$(sed 's|\(.*\)/.*|\1|' <<<"${testmdb_ip4_addr}" )"
-INCLUDES_PATH="${SCRIPT_DIR}/jails/testmdb/includes"
-CERT_EMAIL=${testmdb_cert_email}
-DB_ROOT_PASSWORD=${testmdb_db_root_password}
+JAIL_NAME="mariadb"
+JAIL_IP="$(sed 's|\(.*\)/.*|\1|' <<<"${mariadb_ip4_addr}" )"
+INCLUDES_PATH="${SCRIPT_DIR}/jails/mariadb/includes"
+CERT_EMAIL=${mariadb_cert_email}
+DB_ROOT_PASSWORD=${mariadb_db_root_password}
 DB_NAME="MariaDB"
 DL_FLAGS=""
 
 # Check that necessary variables were set by nextcloud-config
-if [ -z "${testmdb_ip4_addr}" ]; then
+if [ -z "${mariadb_ip4_addr}" ]; then
   echo 'Configuration error: The mariadb jail does NOT accept DHCP'
   echo 'Please reinstall using a fixed IP adress'
   exit 1
@@ -62,7 +62,7 @@ iocage exec "${JAIL_NAME}" sysrc mysql_enable="YES"
 echo "Copying Caddyfile for no SSL"
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/caddy /usr/local/etc/rc.d/
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/Caddyfile /usr/local/www/Caddyfile
-iocage exec "${JAIL_NAME}" sed -i '' "s/yourhostnamehere/${testmdb_host_name}/" /usr/local/www/Caddyfile
+iocage exec "${JAIL_NAME}" sed -i '' "s/yourhostnamehere/${mariadb_host_name}/" /usr/local/www/Caddyfile
 iocage exec "${JAIL_NAME}" sed -i '' "s/JAIL-IP/${JAIL_IP}/" /usr/local/www/Caddyfile
 
 iocage exec "${JAIL_NAME}" sysrc caddy_enable="YES"
@@ -98,7 +98,7 @@ iocage fstab -r "${JAIL_NAME}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
 
 # Done!
 echo "Installation complete!"
-echo "Using your web browser, go to http://${testmdb_host_name} to log in"
+echo "Using your web browser, go to http://${mariadb_host_name} to log in"
 
 if [ "${REINSTALL}" == "true" ]; then
 	echo "You did a reinstall, please use your old database and account credentials"
