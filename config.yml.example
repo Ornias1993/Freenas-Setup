@@ -50,7 +50,6 @@ organizr: organizr
 kms: kms
   pkgs: bash py37-tkinter py37-pip py37-sqlite3 git
 
-
 nextcloud: nextcloud
   ip4_addr: 192.168.1.99/24
   gateway: 192.168.1.1
@@ -72,4 +71,9 @@ nextcloud: nextcloud
 #  db_host
   
 mariadb: mariadb
-  ip4_addr: 192.168.1.5
+  ip4_addr: 192.168.1.98/24
+  gateway: 192.168.1.1
+  pkgs: mariadb103-server git  php74-session php74-xml php74-ctype php74-openssl php74-filter php74-gd php74-json php74-mysqli php74-mbstring php74-zlib php74-zip php74-bz2 phpMyAdmin5-php74 php74-pdo_mysql php74-mysqli phpMyAdmin5-php74-5.0.1
+  db_root_password: ReplaceThisWithYourOwnRootPAssword
+  host_name: mariadb.local.example
+  
