@@ -1,40 +1,62 @@
+
+
+
+### JailMan is a collection of shell scripts designed to make it easier to install all sorts of iocage Jails on FreeNAS.
+
+---
+
+
+[![GitHub last commit](https://img.shields.io/github/last-commit/ornias1993/jailman/dev.svg)](https://github.com/ornias1993/jailman/commits/dev) [![Krihelimeter](http://www.krihelinator.xyz/badge/ornias1993/jailman)](http://www.krihelinator.xyz/repositories/ornias1993/jailman) [![GitHub Release](https://img.shields.io/github/release/ornias1993/jailman.svg)](https://github.com/ornias1993/jailman/releases/latest) [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://github.com/ornias1993/jailman/blob/master/docs/LICENSE.GPLV2) [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://github.com/ornias1993/jailman/blob/master/docs/LICENSE.BSD2)
+
 ## Intro
 
-JailMan is a collection of shell scripts designed to make it easier to install iocage Jails on FreeNAS and/or TrueNAS core.
-Inspirations for this script are: Docker, FreeNAS plugins, Pentaflake's guide and "freenas-iocage-nextcloud" by danb35.
-The updater is inspired by the updater designed for ZFS-Compression-Test by Ornias1993.
+There are a lot of great scripts out there to create all sorts of custom jails on FreeNAS. Sadly enough, they all take their own approach to configuration, which lead to a lot of time wasted configuring all sorts of different scripts.
 
-The goal of this project is to be able to install, update, reinstall, upgrade and delete most of your services by just running a single command.
-While doing this we aim for a "docker like" scenario, where the jail is completely disposable and all configuration is saved outside of the jail.
+We do not aim to be some sort of XKCD like "solution to replace all solutions", but aim to simply improve, iterate and integrate the great work others have already put forward.
 
-Example: 
-If something goes wrong with Jackett, you just use:
-'jailman -r jackett' 
+The goal of this project is to be able to install, update, reinstall, upgrade and delete most of your services by just running a single command using a single config file. While doing this we aim for a "docker like" scenario, where the jail is completely disposable and all configuration is saved outside of the jail.
 
-
-## Install
+## Getting started
+### Installing
+- Get into FreeNAS using the in-gui console or SSH.
+Run the following commands to install jailman:
 - `git clone https://github.com/Ornias1993/jailman.git`
-- `cp config.yml.ex. config.yml`
-- edit config.yml to reflect your personal settings
+- `cd jailman`
+- `cp config.yml.example config.yml`
+- edit config.yml to reflect your personal settings (optional, see "use")
+- Run one of the commands under "How-To Use"
 
-Thats all.
 
-
-## Update
+### Updating
 This script includes an autoupdate feature which checks if changes to the script has been posted to github.
 
-## Use
+
+## How-To Use
 Replace $jailname with the name of the jail you want to install.
 For supported jails, please see this readme or config.yml.example
 
+- First: CD into the directory you downloaded jailman into (see above)
+example:
+`cd /root/jailman`
+
 - Install:
-`jailman.sh -i $jailname`
+`./jailman.sh -i $jailname`
+Example:
+`./jailman.sh -i sonarr`
 
 - ReInstall:
-`jailman.sh -r $jailname`
+`./jailman.sh -r $jailname`
+Example:
+`./jailman.sh -r sonarr`
 
 - Destroy
-`jailman.sh -d $jailname`
+`./jailman.sh -d $jailname`
+Example:
+`./jailman.sh -d sonarr`
+
+You can also do multiple jails in one pass:
+Example:
+`jailman.sh -i sonarr radarr lidarr`
 
 This installs the jail, creates the config dataset if needed, installs all packages and sets them up for you.
 Only thing you need to do is do the setup of the packages in their respective GUI.
@@ -43,19 +65,23 @@ All settings for the applications inside the jails are persistent across reinsta
 config.yml.example includes basic configuration for all jails.
 Basic means: The same setup as a FreeNAS plugin would've, DHCP on bridge0.
 
-## Currently Supported Services
+### Currently Supported Services
 
-### General
+#### General
 
 - organizr
 - py-kms
+- nextcloud
 
-### Downloads
+#### Backend
+- mariadb
+
+#### Downloads
 
 - transmission
 - jackett
 
-### Media
+#### Media
 
 - plex
 - tautulli
@@ -63,25 +89,39 @@ Basic means: The same setup as a FreeNAS plugin would've, DHCP on bridge0.
 - radarr
 - lidarr
 
-## References
+## Get involved
 
-- Pentaflake's guide:
-https://www.ixsystems.com/community/resources/fn11-3-iocage-jails-plex-tautulli-sonarr-radarr-lidarr-jackett-transmission-organizr.58/
+### Preparing your own copy of JailMan
+Getting involved with JailMan and creating your own Jails, is really simple although experience with Bash, BSD and iocage is highly recommended.
 
-- "freenas-iocage-nextcloud" by danb35:
-https://github.com/danb35/freenas-iocage-nextcloud
+- Fork the JailMan Repository and clone your own fork to disk.
+- Create a new branch, starting from the dev branch (with all current development changes)
+- Open Jailman.sh and `BRANCH="dev"`into your own branch. 
 
-- "ZFS-Compression-Test" by Ornias1993:
-https://github.com/Ornias1993/zfs-compression-test
+### Making changes
+To add a jail, you need 4 things:
 
-- "py-kms" by SystemRage and others:
-https://github.com/SystemRage/py-kms
+- A jailfolder under jails/
+- an install script in the jail folder, named `install.sh`
+- an update script in the jail folder, named `update.sh`
+- an entry in `config.yml` with the name of your jail
+
+All jails created by JailMan start with their own persistant data folder in a seperate dataset, mounted under `/config`.
+You can safely use this, or create additional datasets and mount those. 
+
+To make your experience making changes to Jailman as easy as possible, we already made some  convenience functions in global.sh, those are available to your jail install and update scripts from the start!
+
+But above all: Have fun building it!
 
 
-
-### LICENCE
+## LICENCE
 This work is dual licenced under GPLv2 and BSD-2 clause
 
-## Sub-Licences
+### Sub-Licences
 Some sub-modules available under "jails" might be licenced under a different licence.
 Please be aware of this and take note of any LICENCE files signaling a differently licenced sub-module.
+
+
+
+---
+![built-with-resentment](http://forthebadge.com/images/badges/built-with-resentment.svg)       ![contains-technical-debt](http://forthebadge.com/images/badges/contains-technical-debt.svg)
