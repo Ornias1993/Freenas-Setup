@@ -13,7 +13,14 @@ jobs:
   create-wiki:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
+    - name: checkout
+      uses: actions/checkout@master
+    - name: rename-readme
+      run: |
+        for pathname in jails/*/README.md; do
+        cp "$pathname" "wiki/$( basename "$( dirname "$pathname" )" ).md"
+        done
+      shell: bash
     - name: copy file
       uses: canastro/copy-file-action@master
       with:
