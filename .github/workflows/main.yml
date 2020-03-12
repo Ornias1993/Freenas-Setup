@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Create wiki from master
+name: Master workflow
 
 # Controls when the action will run. Triggers the workflow on push or pull request 
 # events but only for the master branch
@@ -16,7 +16,11 @@ jobs:
     - name: checkout
       uses: actions/checkout@master
     - name: rename-readme
-      run: for pathname in jails/*/README.md; do cp "$pathname" "wiki/$( basename "$( dirname "$pathname" )" ).md"; done
+      run: |
+        for pathname in jails/*/README.MD; do cp "$pathname" "wiki/$( basename "$( dirname "$pathname" )" ).md"; done
+        for pathname in jails/*/README.md; do cp "$pathname" "wiki/$( basename "$( dirname "$pathname" )" ).md"; done
+        for pathname in jails/*/readme.md; do cp "$pathname" "wiki/$( basename "$( dirname "$pathname" )" ).md"; done
+        for pathname in jails/*/Readme.md; do cp "$pathname" "wiki/$( basename "$( dirname "$pathname" )" ).md"; done
       shell: bash
     - name: copy file
       uses: canastro/copy-file-action@master
