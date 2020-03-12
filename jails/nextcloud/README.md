@@ -1,3 +1,8 @@
+# Original README from the Upstream Nextcloud-iocage install script:
+
+https://github.com/danb35/freenas-iocage-nextcloud
+
+
 # freenas-iocage-nextcloud
 Script to create an iocage jail on FreeNAS for the latest Nextcloud 18 release, including Caddy 1.0, MariaDB 10.3/PostgreSQL 10, and Let's Encrypt
 
