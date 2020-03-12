@@ -17,7 +17,7 @@ jobs:
     - name: copy file
       uses: canastro/copy-file-action@master
       with:
-        source: "jails/**/*"
+        source: "jails/**/*.md"
         target: "wiki/"
     - name: Upload wiki to Wiki
       uses: docker://decathlon/wiki-page-creator-action:latest
