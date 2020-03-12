@@ -13,6 +13,7 @@ jobs:
   create-wiki:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@test-workflow
     - name: Upload wiki to Wiki
       uses: docker://decathlon/wiki-page-creator-action:latest
       env:
