@@ -14,6 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+    - name: copy file
+      uses: canastro/copy-file-action@master
+      with:
+        source: "jails/**/*"
+        target: "wiki/"
     - name: Upload wiki to Wiki
       uses: docker://decathlon/wiki-page-creator-action:latest
       env:
