@@ -11,7 +11,7 @@ global:
    pkgs: curl ca_root_nss bash
 
 
-# Example configuration, showing how to customise network config.
+# Example configuration, showing how to customise network config. 
 # Ese the same jailname on both sides of this variable example: example
 example: example
   #interfaces is optional and will be autmatically replace with vnet0:bridge0 if not present
