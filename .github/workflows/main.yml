@@ -1,0 +1,25 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Create wiki from master
+
+# Controls when the action will run. Triggers the workflow on push or pull request 
+# events but only for the master branch
+on:
+  push:
+    branches: [ test-workflow ]
+
+
+jobs:
+  create-wiki:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Upload wiki to Wiki
+      uses: docker://decathlon/wiki-page-creator-action:latest
+      env:
+        ACTION_MAIL: ornias1993@users.noreply.github.com
+        ACTION_NAME: ornias1993
+        GH_PAT: ${{ secrets.WIKI_GH_PAT }}
+        MD_FOLDER: wiki
+        OWNER: ornias1993
+        REPO_NAME: jailman
+        SKIP_MD: README.md
