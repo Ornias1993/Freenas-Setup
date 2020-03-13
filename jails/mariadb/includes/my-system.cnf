@@ -2,3 +2,15 @@
 innodb_file_per_table=1
 transaction_isolation = READ-COMMITTED
 binlog_format = ROW
+
+symbolic-links=0
+innodb_doublewrite = 0
+innodb_checksum_algorithm = none
+innodb_file_per_table=1
+
+innodb_buffer_pool_size = 1G
+innodb_log_buffer_size  = 8M
+innodb_open_files       = 400
+innodb_io_capacity      = 400
+innodb_flush_method     = O_DIRECT
+innodb_io_capacity      = 4000
