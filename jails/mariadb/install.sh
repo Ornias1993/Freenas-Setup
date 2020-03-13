@@ -103,11 +103,9 @@ echo "Using your web browser, go to http://${mariadb_host_name} to log in"
 if [ "${REINSTALL}" == "true" ]; then
 	echo "You did a reinstall, please use your old database and account credentials"
 else
-
 	echo "Database Information"
 	echo "--------------------"
 	echo "The ${DB_NAME} root password is ${DB_ROOT_PASSWORD}"
 	fi
-	echo ""
-	echo "All passwords are saved in /root/${JAIL_NAME}_db_password.txt"
-fi
+echo ""
+echo "All passwords are saved in /root/${JAIL_NAME}_db_password.txt"
