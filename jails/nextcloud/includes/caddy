@@ -52,6 +52,7 @@ load_rc_config ${name}
 : ${caddy_logfile="/var/log/caddy.log"}
 : ${caddy_user="root"}
 : ${caddy_group="wheel"}
+: ${caddy_SNI_default=""}
 
 if [ "$caddy_cert_email" = "" ]
 then

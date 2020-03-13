@@ -15,7 +15,7 @@ NO_CERT=${nextcloud_no_cert}
 DL_FLAGS=${nextcloud_dl_flags}
 DNS_SETTING=${nextcloud_dns_settings}
 CERT_EMAIL=${nextcloud_cert_email}
-
+HOST_NAME=${nextcloud_host_name}
 
 # Only generate new DB passwords when using buildin database
 # Set DB username and database to fixed "nextcloud"
@@ -88,7 +88,7 @@ if [ -z "${nextcloud_time_zone}" ]; then
   echo 'Configuration error: TIME_ZONE must be set'
   exit 1
 fi
-if [ -z "${nextcloud_host_name}" ]; then
+if [ -z "${HOST_NAME}" ]; then
   echo 'Configuration error: HOST_NAME must be set'
   exit 1
 fi
@@ -204,12 +204,15 @@ iocage exec "${JAIL_NAME}" chown -R www:www /usr/local/www/nextcloud/
 
 
 # Generate and install self-signed cert, if necessary
-if [ $SELFSIGNED_CERT -eq 1 ]; then
-  iocage exec "${JAIL_NAME}" mkdir -p /config/ssl
-  iocage exec "${JAIL_NAME}" mkdir -p /config/ssl
-  openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=${nextcloud_host_name}" -keyout "${INCLUDES_PATH}"/privkey.pem -out "${INCLUDES_PATH}"/fullchain.pem
-  iocage exec "${JAIL_NAME}" cp /mnt/includes/privkey.pem /config/ssl/privkey.pem
-  iocage exec "${JAIL_NAME}" cp /mnt/includes/fullchain.pem /config/ssl/fullchain.pem
+if [ $SELFSIGNED_CERT -eq 1 ] && [ ! -f "/mnt/${global_dataset_config}/${JAIL_NAME}/ssl/privkey.pem" ]; then
+	echo "No ssl certificate present, generating self signed certificate"
+	if [ ! -d "/mnt/${global_dataset_config}/${JAIL_NAME}/ssl" ]; then
+		echo "cert folder not existing... creating..."
+		iocage exec ${JAIL_NAME} mkdir /config/ssl
+	fi
+	openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=${HOST_NAME}" -keyout "${INCLUDES_PATH}"/privkey.pem -out "${INCLUDES_PATH}"/fullchain.pem
+	iocage exec "${JAIL_NAME}" cp /mnt/includes/privkey.pem /config/ssl/privkey.pem
+	iocage exec "${JAIL_NAME}" cp /mnt/includes/fullchain.pem /config/ssl/fullchain.pem
 fi
 
 # Copy and edit pre-written config files
@@ -232,13 +235,14 @@ fi
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/caddy /usr/local/etc/rc.d/
 
 
-iocage exec "${JAIL_NAME}" sed -i '' "s/yourhostnamehere/${nextcloud_host_name}/" /usr/local/www/Caddyfile
+iocage exec "${JAIL_NAME}" sed -i '' "s/yourhostnamehere/${HOST_NAME}/" /usr/local/www/Caddyfile
 iocage exec "${JAIL_NAME}" sed -i '' "s/DNS-PLACEHOLDER/${DNS_SETTING}/" /usr/local/www/Caddyfile
 iocage exec "${JAIL_NAME}" sed -i '' "s/JAIL-IP/${JAIL_IP}/" /usr/local/www/Caddyfile
 iocage exec "${JAIL_NAME}" sed -i '' "s|mytimezone|${nextcloud_time_zone}|" /usr/local/etc/php.ini
 
 iocage exec "${JAIL_NAME}" sysrc caddy_enable="YES"
 iocage exec "${JAIL_NAME}" sysrc caddy_cert_email="${CERT_EMAIL}"
+iocage exec "${JAIL_NAME}" sysrc caddy_SNI_default="${HOST_NAME}"
 iocage exec "${JAIL_NAME}" sysrc caddy_env="${DNS_ENV}"
 
 iocage restart "${JAIL_NAME}"
@@ -279,13 +283,13 @@ else
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set redis port --value=0 --type=integer'
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set memcache.locking --value="\OC\Memcache\Redis"'
 	if [ $NO_CERT -eq 1 ]; then
-		iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"http://${nextcloud_host_name}/\""
+		iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"http://${HOST_NAME}/\""
 	else
-		iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"https://${nextcloud_host_name}/\""
+		iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"https://${HOST_NAME}/\""
 	fi
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set htaccess.RewriteBase --value="/"'
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ maintenance:update:htaccess'
-	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set trusted_domains 1 --value=\"${nextcloud_host_name}\""
+	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set trusted_domains 1 --value=\"${HOST_NAME}\""
 	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set trusted_domains 2 --value=\"${JAIL_IP}\""
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ app:enable encryption'
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ encryption:enable'
@@ -305,9 +309,9 @@ iocage fstab -r "${JAIL_NAME}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
 # Done!
 echo "Installation complete!"
 if [ $NO_CERT -eq 1 ]; then
-  echo "Using your web browser, go to http://${nextcloud_host_name} to log in"
+  echo "Using your web browser, go to http://${HOST_NAME} to log in"
 else
-  echo "Using your web browser, go to https://${nextcloud_host_name} to log in"
+  echo "Using your web browser, go to https://${HOST_NAME} to log in"
 fi
 
 if [ "${REINSTALL}" == "true" ]; then
