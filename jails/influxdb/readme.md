@@ -1,5 +1,3 @@
-** Note: This jail is configured with a default configuration located in /usr/local/etc/influxdb.conf, along with a sample default configuration.
-
 # Original README from the influxdb github:
 
 https://github.com/influxdata/influxdb
