@@ -31,7 +31,7 @@ then
     git reset --hard
     git checkout $1
     git pull
-    echo "script updated"
+    echo "script updated, please restart the script manually"
     exit 1
 else
     echo "script up-to-date"
@@ -68,13 +68,13 @@ else
 	echo '{"pkgs":['${pkgs}']}' > /tmp/pkg.json
 	if [ "${setdhcp}" == "on" ]
 	then
-		if ! iocage create -n "${1}" -p /tmp/pkg.json -r ${global_jails_version} interfaces="${jailinterfaces}" dhcp="on" vnet="on" allow_raw_sockets="1" boot="on"
+		if ! iocage create -n "${1}" -p /tmp/pkg.json -r ${global_jails_version} interfaces="${jailinterfaces}" dhcp="on" vnet="on" allow_raw_sockets="1" boot="on" -b
 		then
 			echo "Failed to create jail"
 			exit 1
 		fi
 	else
-		if ! iocage create -n "${1}" -p /tmp/pkg.json -r ${global_jails_version} interfaces="${jailinterfaces}" ip4_addr="vnet0|${!jailip4}" defaultrouter="${!jailgateway}" vnet="on" allow_raw_sockets="1" boot="on"
+		if ! iocage create -n "${1}" -p /tmp/pkg.json -r ${global_jails_version} interfaces="${jailinterfaces}" ip4_addr="vnet0|${!jailip4}" defaultrouter="${!jailgateway}" vnet="on" allow_raw_sockets="1" boot="on" -b
 		then
 			echo "Failed to create jail"
 			exit 1
@@ -87,6 +87,14 @@ else
 	
 	createmount $1 ${global_dataset_config}
 	createmount $1 ${global_dataset_config}/$1 /config
+	
+	# Create and Mount portsnap
+	echo "Mounting and fetching ports"
+	createmount $1 ${global_dataset_config}/portsnap
+	createmount $1 ${global_dataset_config}/portsnap/db /var/db/portsnap
+	createmount $1 ${global_dataset_config}/portsnap/ports /usr/ports
+	
+	iocage exec "$1" "if [ -z /usr/ports ]; then portsnap fetch extract; else portsnap auto; fi"
 	
 	echo "Jail creation completed for $1"
 fi	

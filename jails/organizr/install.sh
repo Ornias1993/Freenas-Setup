@@ -13,15 +13,15 @@ cp ${SCRIPT_DIR}/jails/organizr/includes/nginx.conf /mnt/${global_dataset_iocage
 cp -Rf ${SCRIPT_DIR}/jails/organizr/includes/custom /mnt/${global_dataset_iocage}/jails/organizr/root/usr/local/etc/nginx/custom
 
 if [ ! -d "/mnt/${global_dataset_config}/organizr/ssl" ]; then
-	echo "cert folder not existing... creating..."
+	echo "cert folder doesn't exist... creating..."
 	iocage exec organizr mkdir /config/ssl
 fi
 
 if [ -f "/mnt/${global_dataset_config}/organizr/ssl/Organizr-Cert.crt" ]; then
-    echo "certificate exist... Skipping cert generation"
+    echo "certificate exists... Skipping cert generation"
 else
-	"No ssl certificate present, generating self signed certificate"
-	openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=localhost" -keyout /mnt/${global_dataset_config}/organizr/cert/Organizr-Cert.key -out /mnt/${global_dataset_config}/organizr/cert/Organizr-Cert.crt
+	echo "No ssl certificate present, generating self signed certificate"
+	openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=localhost" -keyout /mnt/${global_dataset_config}/organizr/ssl/Organizr-Cert.key -out /mnt/${global_dataset_config}/organizr/ssl/Organizr-Cert.crt
 fi
 
 iocage exec organizr git clone https://github.com/causefx/Organizr.git /usr/local/www/Organizr

@@ -19,7 +19,7 @@ global:
 
 
 # Example configuration, showing how to customise network config. 
-# Ese the same jailname on both sides of this variable example: example
+# Use the same jailname on both sides of this variable example: example
 example: example
   #interfaces is optional and will be autmatically replace with vnet0:bridge0 if not present
   interfaces: vnet0:bridge0
@@ -33,13 +33,13 @@ jackett: jackett
   pkgs: mono
  
 radarr: radarr
-  pkgs: mono
+  pkgs: mono mediainfo sqlite3 libgdiplus
  
 sonarr: sonarr
-  pkgs: mono
+  pkgs: mono mediainfo sqlite3
  
 lidarr: lidarr
-  pkgs: mono
+  pkgs: mono mediainfo sqlite3
  
 transmission: transmission
   pkgs: bash unzip unrar transmission
@@ -92,3 +92,9 @@ bitwarden: bitwarden
   db_password: "YourDBPasswordHerePLEASE"
   type: mariadb
   admin_token: "PUTYOURADMINTOKENHEREANDREMOVETHIS"
+
+influxdb: influxdb
+  ip4_addr: 192.168.1.250/24
+  gateway: 192.168.1.1
+  pkgs: influxdb
+  database: influxdb

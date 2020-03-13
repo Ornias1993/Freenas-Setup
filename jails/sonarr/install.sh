@@ -9,7 +9,6 @@ createmount sonarr ${global_dataset_downloads}/complete /mnt/fetched
 createmount sonarr ${global_dataset_media}
 createmount sonarr ${global_dataset_media}/shows /mnt/shows
 
-iocage exec sonarr ln -s /usr/local/bin/mono /usr/bin/mono
 iocage exec sonarr "fetch http://download.sonarr.tv/v2/master/mono/NzbDrone.master.tar.gz -o /usr/local/share"
 iocage exec sonarr "tar -xzvf /usr/local/share/NzbDrone.master.tar.gz -C /usr/local/share"
 iocage exec sonarr rm /usr/local/share/NzbDrone.master.tar.gz
