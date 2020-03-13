@@ -8,7 +8,7 @@ https://yourhostnamehere https://JAIL-IP {
 	log    /var/log/nextcloud_access.log
 	errors /var/log/nextcloud_errors.log
 
-	tls /usr/local/etc/pki/tls/certs/fullchain.pem /usr/local/etc/pki/tls/private/privkey.pem
+	tls /config/ssl/fullchain.pem /config/ssl/privkey.pem
 
 	fastcgi / 127.0.0.1:9000 php {
 		env PATH /bin
