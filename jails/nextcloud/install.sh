@@ -157,12 +157,14 @@ if [ "${DATABASE}" = "mariadb" ]; then
   createmount ${JAIL_NAME} ${global_dataset_config}/${JAIL_NAME}/db/mariadb /var/db/mysql
   zfs set recordsize=16K ${global_dataset_config}/${JAIL_NAME}/db/mariadb
   zfs set primarycache=metadata ${global_dataset_config}/${JAIL_NAME}/db/mariadb
+
   chown -R 88:88 /var/db/mariadb
 elif [ "${DATABASE}" = "pgsql" ]; then
   createmount ${JAIL_NAME} ${global_dataset_config}/${JAIL_NAME}/db
   createmount ${JAIL_NAME} ${global_dataset_config}/${JAIL_NAME}/db/pgsql /var/db/postgres
   zfs set recordsize=16K ${global_dataset_config}/${JAIL_NAME}/db/pgsql
   zfs set primarycache=metadata ${global_dataset_config}/${JAIL_NAME}/db/pgsql
+
   chown -R 88:88 /var/db/postgres
 fi
 
@@ -291,6 +293,12 @@ else
 	# Secure database, set root password, create Nextcloud DB, user, and password
 	if [ "${DATABASE}" = "mariadb" ]; then
 		iocage exec "${JAIL_NAME}" cp -f /mnt/includes/my-system.cnf /var/db/mysql/my.cnf
+		if [ "${DATABASE}" = "mariadb" ]; then
+			iocage exec "${JAIL_NAME}" cp -f /mnt/includes/my.cnf /root/.my.cnf
+			iocage exec "${JAIL_NAME}" sed -i '' "s|mypassword|${DB_ROOT_PASSWORD}|" /root/.my.cnf
+		fi
+fi
+
 	fi
 	
 	if [ "${DATABASE}" = "mariadb" ]; then
@@ -302,6 +310,10 @@ else
 		iocage exec "${JAIL_NAME}" mysql -u root -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';"
 		iocage exec "${JAIL_NAME}" mysql -u root -e "UPDATE mysql.user SET Password=PASSWORD('${DB_ROOT_PASSWORD}') WHERE User='root';"
 		iocage exec "${JAIL_NAME}" mysqladmin reload
+
+		iocage exec "${JAIL_NAME}" cp -f /mnt/includes/my.cnf /root/.my.cnf
+		iocage exec "${JAIL_NAME}" sed -i '' "s|mypassword|${DB_ROOT_PASSWORD}|" /root/.my.cnf
+
 	elif [ "${DATABASE}" = "mariadb-jail" ]; then
 		iocage exec "mariadb" mysql -u root -e "CREATE DATABASE ${DB_DATABASE};"
 		iocage exec "mariadb" mysql -u root -e "GRANT ALL ON ${DB_DATABASE}.* TO ${DB_USER}@${JAIL_IP} IDENTIFIED BY '${DB_PASSWORD}';"
@@ -358,12 +370,6 @@ else
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ background:cron'
 	
 fi
-
-if [ "${DATABASE}" = "mariadb" ] && [ "${REINSTALL}" == "true" ]; then
-	iocage exec "${JAIL_NAME}" cp -f /mnt/includes/my.cnf /root/.my.cnf
-	iocage exec "${JAIL_NAME}" sed -i '' "s|mypassword|${DB_ROOT_PASSWORD}|" /root/.my.cnf
-fi
-
 
 iocage exec "${JAIL_NAME}" touch /var/log/nextcloud.log
 iocage exec "${JAIL_NAME}" chown www /var/log/nextcloud.log

@@ -12,12 +12,12 @@ mv /mnt/${global_dataset_iocage}/jails/organizr/root/usr/local/etc/nginx/nginx.c
 cp ${SCRIPT_DIR}/jails/organizr/includes/nginx.conf /mnt/${global_dataset_iocage}/jails/organizr/root/usr/local/etc/nginx/nginx.conf
 cp -Rf ${SCRIPT_DIR}/jails/organizr/includes/custom /mnt/${global_dataset_iocage}/jails/organizr/root/usr/local/etc/nginx/custom
 
-if [ ! -d "/mnt/${global_dataset_config}/organizr/cert" ]; then
+if [ ! -d "/mnt/${global_dataset_config}/organizr/ssl" ]; then
 	echo "cert folder not existing... creating..."
-	iocage exec organizr mkdir /config/cert
+	iocage exec organizr mkdir /config/ssl
 fi
 
-if [ -f "/mnt/${global_dataset_config}/organizr/cert/Organizr-Cert.crt" ]; then
+if [ -f "/mnt/${global_dataset_config}/organizr/ssl/Organizr-Cert.crt" ]; then
     echo "certificate exist... Skipping cert generation"
 else
 	"No ssl certificate present, generating self signed certificate"
