@@ -52,14 +52,15 @@ iocage exec "${JAIL_NAME}" cp -f /mnt/includes/influxdb.conf /usr/local/etc/
 
 # Start influxdb and wait for it to startup
 iocage exec "${JAIL_NAME}" service influxd start
+sleep 30
 
 if [ "${REINSTALL}" == "true" ]; then
 	echo "Reinstall detected, skipping generation of new config and database"
 else
 	
 	# Create database, set username and password
-    iocage exec "${JAIL_NAME}" curl -i -XPOST http://localhost:8086/query --data-urlencode 'q=CREATE DATABASE '"$DATABASE"
-    iocage exec "${JAIL_NAME}" curl -i -XPOST http://localhost:8086/query --data-urlencode 'q=CREATE USER '"$DB_USER"' WITH PASSWORD '"${DB_PASSWORD}"
+    iocage exec "${JAIL_NAME}" curl -i -XPOST http://localhost:8086/query --data-urlencode 'q=CREATE DATABASE '"$DATABASE"''
+    iocage exec "${JAIL_NAME}" curl -i -XPOST http://localhost:8086/query --data-urlencode 'q=CREATE USER '"$DB_USER"' WITH PASSWORD '"${DB_PASSWORD}"''
 	iocage exec "${JAIL_NAME}" service influxd restart
 fi
 
