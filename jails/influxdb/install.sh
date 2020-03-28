@@ -60,7 +60,7 @@ else
 	
 	# Create database, set username and password
     iocage exec "${JAIL_NAME}" curl -i -XPOST http://localhost:8086/query --data-urlencode 'q=CREATE DATABASE '"$DATABASE"''
-    iocage exec "${JAIL_NAME}" curl -i -XPOST http://localhost:8086/query --data-urlencode 'q=CREATE USER '"$DB_USER"' WITH PASSWORD '"$DB_PASSWORD"''
+    iocage exec "${JAIL_NAME}" curl -i -XPOST http://localhost:8086/query --data-urlencode 'q=CREATE USER "'"$DB_USER"'" WITH PASSWORD "'"$DB_PASSWORD"'"'
 	iocage exec "${JAIL_NAME}" service influxd restart
 fi
 
