@@ -45,7 +45,7 @@ if [ "${REINSTALL}" == "true" ]; then
 else
 	
 	# Create database and restart
-    iocage exec "${JAIL_NAME}" curl -i -XPOST http://localhost:8086/query --data-urlencode 'q=CREATE DATABASE '"$DATABASE"''
+    iocage exec "${JAIL_NAME}" curl -i -XPOST http://localhost:8086/query --data-urlencode "q=CREATE DATABASE {$DATABASE}"
 	iocage exec "${JAIL_NAME}" service influxd restart
 fi
 	
