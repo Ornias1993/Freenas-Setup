@@ -52,7 +52,7 @@ iocage exec "${JAIL_NAME}" cp -f /mnt/includes/influxdb.conf /usr/local/etc/
 
 # Start influxdb and wait for it to startup
 iocage exec "${JAIL_NAME}" service influxd start
-sleep 5
+sleep 5s
 
 if [ "${REINSTALL}" == "true" ]; then
 	echo "Reinstall detected, skipping generaion of new config and database"
