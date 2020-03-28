@@ -55,7 +55,7 @@ iocage exec "${JAIL_NAME}" service influxd start
 sleep 15s
 
 if [ "${REINSTALL}" == "true" ]; then
-	echo "Reinstall detected, skipping generaion of new config and database"
+	echo "Reinstall detected, skipping generation of new config and database"
 else
 	
 	# Create database, set username and password
