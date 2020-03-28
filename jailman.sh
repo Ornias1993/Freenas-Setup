@@ -15,7 +15,7 @@ if ! [ $(id -u) = 0 ]; then
 fi
 
 # Auto Update
-BRANCH="dev"
+BRANCH="jails/influxdb"
 gitupdate ${BRANCH}
 
 # If no option is given, point to the help menu
