@@ -2,14 +2,14 @@ global:
   # Relevant dataset paths, please use the ZFS dataset syntax such as: tank/apps
   dataset:
    # dataset for internal jail config files
-   config: tank/apps
+   config: Media/apps
    # Iocage root dataset
-   iocage: tank/iocage
+   iocage: Media/iocage
    # Media library dataset
-   media: tank/media
+   media: Media/Media
    # Parent downloads dataset 
    # (is going to contain: Complete and Incomplete datasets for downloads)
-   downloads: tank/downloads
+   downloads: Media/iocage/download
   jails:
    # jail version to install
    version: 11.3-RELEASE
@@ -19,7 +19,7 @@ global:
 
 
 # Example configuration, showing how to customise network config. 
-# Ese the same jailname on both sides of this variable example: example
+# Use the same jailname on both sides of this variable example: example
 example: example
   #interfaces is optional and will be autmatically replace with vnet0:bridge0 if not present
   interfaces: vnet0:bridge0
@@ -92,3 +92,11 @@ bitwarden: bitwarden
   db_password: "YourDBPasswordHerePLEASE"
   type: mariadb
   admin_token: "PUTYOURADMINTOKENHEREANDREMOVETHIS"
+
+influxdb: influxdb
+  ip4_addr: 192.168.2.250/24
+  gateway: 192.168.2.1
+  pkgs: curl influxdb
+  database: influxdb
+  db_user: SetThisToYourDBUser
+  db_password: SetThisToYourDBPassword
