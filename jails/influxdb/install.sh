@@ -50,8 +50,9 @@ iocage exec "${JAIL_NAME}" sysrc influxd_enable="YES"
 echo "Copying default config file"
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/influxdb.conf /usr/local/etc/
 
-# Start influxdb using provided .conf
+# Start influxdb and wait for it to startup
 iocage exec "${JAIL_NAME}" service influxd start
+sleep 5
 
 if [ "${REINSTALL}" == "true" ]; then
 	echo "Reinstall detected, skipping generaion of new config and database"
