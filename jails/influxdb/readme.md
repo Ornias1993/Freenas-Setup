@@ -1,4 +1,4 @@
-** Note: The default config is modified to enforce authentication using the user and password supplied in the config.yml. Modify the provided influxdb.conf accordingly to disable. Alternatively, you may rename influxdb.conf.sample to influxdb.conf to start with a fresh, default influxdb configuration.
+** Note: This jail is configured with a default configuration located in /usr/local/etc/influxdb.conf, along with a sample default configuration.
 
 # Original README from the influxdb github:
 

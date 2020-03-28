@@ -98,5 +98,3 @@ influxdb: influxdb
   gateway: 192.168.1.1
   pkgs: influxdb
   database: influxdb
-  db_user: SetThisToYourDBUser
-  db_password: SetThisToYourDBPassword
