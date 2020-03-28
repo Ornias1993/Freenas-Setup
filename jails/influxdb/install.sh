@@ -23,7 +23,7 @@ DB_PASSWORD=${influxdb_db_password}
 
 # Make sure DB_PATH is empty -- if not, InfluxDB will choke
 
-if [ "$(ls -A "/mnt/${global_dataset_config}/${JAIL_NAME}/var/db")" ]; then
+if [ "$(ls -A "/mnt/${global_dataset_config}/${JAIL_NAME}")" ]; then
 	echo "Reinstall of influxdb detected... Continuing"
 	REINSTALL="true"
 fi
@@ -32,7 +32,7 @@ fi
 # createmount ${JAIL_NAME} ${global_dataset_config}/${JAIL_NAME}/db /var/db/influxdb/data
 # createmount ${JAIL_NAME} ${global_dataset_config}/${JAIL_NAME}/wal /var/db/influxdb/meta
 
-# iocage exec "${JAIL_NAME}" chown -R 907:907 /var/db/influxdb
+iocage exec "${JAIL_NAME}" chown -R 907:907 /var/db/influxdb
 
 # Install includes fstab
 iocage exec "${JAIL_NAME}" mkdir -p /mnt/includes

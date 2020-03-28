@@ -2,14 +2,14 @@ global:
   # Relevant dataset paths, please use the ZFS dataset syntax such as: tank/apps
   dataset:
    # dataset for internal jail config files
-   config: Media/apps
+   config: tank/apps
    # Iocage root dataset
-   iocage: Media/iocage
+   iocage: tank/iocage
    # Media library dataset
-   media: Media/Media
+   media: tank/Media
    # Parent downloads dataset 
    # (is going to contain: Complete and Incomplete datasets for downloads)
-   downloads: Media/iocage/download
+   downloads: tank/iocage/download
   jails:
    # jail version to install
    version: 11.3-RELEASE
@@ -96,7 +96,7 @@ bitwarden: bitwarden
 influxdb: influxdb
   ip4_addr: 192.168.2.250/24
   gateway: 192.168.2.1
-  pkgs: curl influxdb
+  pkgs: influxdb
   database: influxdb
   db_user: SetThisToYourDBUser
   db_password: SetThisToYourDBPassword
