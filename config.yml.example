@@ -94,8 +94,8 @@ bitwarden: bitwarden
   admin_token: "PUTYOURADMINTOKENHEREANDREMOVETHIS"
 
 influxdb: influxdb
-  ip4_addr: 192.168.2.250/24
-  gateway: 192.168.2.1
+  ip4_addr: 192.168.1.250/24
+  gateway: 192.168.1.1
   pkgs: influxdb
   database: influxdb
   db_user: SetThisToYourDBUser
