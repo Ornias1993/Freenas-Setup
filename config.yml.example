@@ -9,7 +9,7 @@ global:
    media: tank/Media
    # Parent downloads dataset 
    # (is going to contain: Complete and Incomplete datasets for downloads)
-   downloads: tank/iocage/download
+   downloads: tank/downloads
   jails:
    # jail version to install
    version: 11.3-RELEASE
