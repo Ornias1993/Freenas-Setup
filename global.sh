@@ -24,7 +24,7 @@ gitupdate() {
 echo "checking for updates using Branch: $1"
 git fetch
 git update-index -q --refresh
-CHANGED=$(git diff --name-only $1)
+CHANGED=$(git diff --name-only origin/$1)
 if [ ! -z "$CHANGED" ];
 then
     echo "script requires update"
