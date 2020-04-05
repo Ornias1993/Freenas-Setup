@@ -6,7 +6,7 @@ global:
    # Iocage root dataset
    iocage: tank/iocage
    # Media library dataset
-   media: tank/Media
+   media: tank/media
    # Parent downloads dataset 
    # (is going to contain: Complete and Incomplete datasets for downloads)
    downloads: tank/downloads

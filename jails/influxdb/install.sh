@@ -13,16 +13,13 @@ JAIL_IP="$(sed 's|\(.*\)/.*|\1|' <<<"${influxdb_ip4_addr}" )"
 INCLUDES_PATH="${SCRIPT_DIR}/jails/influxdb/includes"
 DATABASE=${influxdb_database}
 
-# Install includes fstab
-iocage exec "${JAIL_NAME}" mkdir -p /mnt/includes
-iocage fstab -a "${JAIL_NAME}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
-
-# Install influxdb
+# Enable influxdb
 iocage exec "${JAIL_NAME}" sysrc influxd_enable="YES"
 
 # Copy and edit pre-written config files
 echo "Copying default config file"
-iocage exec "${JAIL_NAME}" cp -f /mnt/includes/influxdb.conf /usr/local/etc/
+iocage exec ${JAIL_NAME} mkdir -p /usr/local/etc
+cp ${INCLUDES_PATH}/influxdb.conf /mnt/${GLOBAL_DATASET_IOCAGE}/jails/${JAIL_NAME}/root/usr/local/etc/
 
 # Start influxdb and wait for it to startup
 iocage exec "${JAIL_NAME}" service influxd start
