@@ -20,7 +20,7 @@ fi
 if [ -f "/mnt/${global_dataset_config}/organizr/ssl/Organizr-Cert.crt" ]; then
     echo "certificate exist... Skipping cert generation"
 else
-	"No ssl certificate present, generating self signed certificate"
+	echo "No ssl certificate present, generating self signed certificate"
 	openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=localhost" -keyout /mnt/${global_dataset_config}/organizr/cert/Organizr-Cert.key -out /mnt/${global_dataset_config}/organizr/cert/Organizr-Cert.crt
 fi
 
