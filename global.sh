@@ -31,7 +31,7 @@ then
     git reset --hard
     git checkout $1
     git pull
-    echo "script updated"
+    echo "script updated, please restart the script manually"
     exit 1
 else
     echo "script up-to-date"
