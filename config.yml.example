@@ -33,13 +33,13 @@ jackett: jackett
   pkgs: mono
  
 radarr: radarr
-  pkgs: mono
+  pkgs: mono mediainfo sqlite3 libgdiplus
  
 sonarr: sonarr
-  pkgs: mono
+  pkgs: mono mediainfo sqlite3
  
 lidarr: lidarr
-  pkgs: mono
+  pkgs: mono mediainfo sqlite3
  
 transmission: transmission
   pkgs: bash unzip unrar transmission
