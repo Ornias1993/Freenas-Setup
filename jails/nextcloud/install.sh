@@ -134,11 +134,6 @@ fi
 #
 #####
 
-# Create and Mount portsnap
-createmount ${JAIL_NAME} ${global_dataset_config}/portsnap
-createmount ${JAIL_NAME} ${global_dataset_config}/portsnap/db /var/db/portsnap
-createmount ${JAIL_NAME} ${global_dataset_config}/portsnap/ports /usr/ports
-
 # Create and Mount Nextcloud, Config and Files
 createmount ${JAIL_NAME} ${global_dataset_config}/${JAIL_NAME}/config /usr/local/www/nextcloud/config
 createmount ${JAIL_NAME} ${global_dataset_config}/${JAIL_NAME}/themes /usr/local/www/nextcloud/themes
@@ -158,8 +153,6 @@ iocage exec "${JAIL_NAME}" chmod -R 770 /config/files
 # Basic dependency install
 #
 #####
-
-iocage exec "${JAIL_NAME}" "if [ -z /usr/ports ]; then portsnap fetch extract; else portsnap auto; fi"
 
 if [ "${DATABASE}" = "mariadb-external" ] || [ "${DATABASE}" = "mariadb-jail" ]; then
   iocage exec "${JAIL_NAME}" pkg install -qy mariadb103-client php73-pdo_mysql php73-mysqli
