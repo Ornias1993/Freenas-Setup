@@ -88,6 +88,14 @@ else
 	createmount $1 ${global_dataset_config}
 	createmount $1 ${global_dataset_config}/$1 /config
 	
+	# Create and Mount portsnap
+	echo "Mounting and fetching ports"
+	createmount $1 ${global_dataset_config}/portsnap
+	createmount $1 ${global_dataset_config}/portsnap/db /var/db/portsnap
+	createmount $1 ${global_dataset_config}/portsnap/ports /usr/ports
+	
+	iocage exec "$1" "if [ -z /usr/ports ]; then portsnap fetch extract; else portsnap auto; fi"
+	
 	echo "Jail creation completed for $1"
 fi	
 	
