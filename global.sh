@@ -87,6 +87,9 @@ else
 	
 	createmount $1 ${global_dataset_config}
 	createmount $1 ${global_dataset_config}/$1 /config
+	
+	# Create and Mount portsnap
+	echo "Mounting and fetching ports"
 	createmount $1 ${global_dataset_config}/portsnap
 	createmount $1 ${global_dataset_config}/portsnap/db /var/db/portsnap
 	createmount $1 ${global_dataset_config}/portsnap/ports /usr/ports
