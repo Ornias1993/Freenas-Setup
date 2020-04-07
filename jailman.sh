@@ -46,24 +46,24 @@ while getopts ":i:r:u:d:g:h" opt
             ;;
         u ) updatejails=("$OPTARG")
             until [[ $(eval "echo \${$OPTIND}") =~ ^-.* ]] || [ -z $(eval "echo \${$OPTIND}") ]; do
-                updateljails+=($(eval "echo \${$OPTIND}"))
+                updatejails+=($(eval "echo \${$OPTIND}"))
                 OPTIND=$((OPTIND + 1))
             done
             ;;
         d ) destroyjails=("$OPTARG")
             until [[ $(eval "echo \${$OPTIND}") =~ ^-.* ]] || [ -z $(eval "echo \${$OPTIND}") ]; do
-                deletejails+=($(eval "echo \${$OPTIND}"))
+                destroyjails+=($(eval "echo \${$OPTIND}"))
                 OPTIND=$((OPTIND + 1))
             done
             ;;
-		g ) upgradejails=("$OPTARG")
+	g ) upgradejails=("$OPTARG")
             until [[ $(eval "echo \${$OPTIND}") =~ ^-.* ]] || [ -z $(eval "echo \${$OPTIND}") ]; do
                 upgradejails+=($(eval "echo \${$OPTIND}"))
                 OPTIND=$((OPTIND + 1))
             done
             ;;
-		h ) 
-			echo "Usage:"
+	h ) 
+	    echo "Usage:"
             echo "$0 -i "
             echo "$0 -r "
             echo "$0 -u "
@@ -72,15 +72,15 @@ while getopts ":i:r:u:d:g:h" opt
             echo ""
             echo "   -i to install jails, listed by name, space seperated like this: jackett plex sonarr"
             echo "   -r to reinstall jails, listed by name, space seperated like this: jackett plex sonarr"
-			echo "   -u to update jails, listed by name, space seperated like this: jackett plex sonarr"
+            echo "   -u to update jails, listed by name, space seperated like this: jackett plex sonarr"
             echo "   -d to destroy jails, listed by name, space seperated like this: jackett plex sonarrt"
             echo "   -g to upgrade jails, listed by name, space seperated like this: jackett plex sonarr"
             echo "   -h help (this output)"
-			exit 0
+            exit 0
             ;;
-		? ) echo "Error: Invalid option was specified -$OPTARG"
-			exit 0
-			;;
+	? ) echo "Error: Invalid option was specified -$OPTARG"
+            exit 0
+            ;;
      esac
 done
 
