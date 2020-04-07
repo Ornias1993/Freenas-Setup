@@ -34,6 +34,10 @@ iocage fstab -r "${JAIL_NAME}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
 
 # Done!
 echo "Installation complete!"
+<<<<<<< HEAD
+=======
+echo "Your may connect InfluxDB plugins to the InfluxDB jail at http://${JAIL_IP}:8086."
+>>>>>>> update dev
 echo "You may connect InfluxDB plugins to the InfluxDB jail at http://${JAIL_IP}:8086."
 echo ""
 echo "Database Information"
@@ -42,5 +46,9 @@ echo "Database = ${DATABASE} at http://${JAIL_IP}:8086."
 echo ""
 echo "Configuration Information"
 echo "-------------------------"
+<<<<<<< HEAD
+=======
+echo "Configuration located at /usr/local/etc/influxdb.conf"
+>>>>>>> update dev
 echo "The configuration file is located at /usr/local/etc/influxdb.conf"
 echo ""
