@@ -44,7 +44,6 @@ echo "Database Information"
 echo "--------------------"
 echo "Database = ${DATABASE} at http://${JAIL_IP}:8086."
 <<<<<<< HEAD
-<<<<<<< HEAD
 echo ""
 echo "Configuration Information"
 echo "-------------------------"
@@ -55,6 +54,4 @@ echo "Configuration located at /usr/local/etc/influxdb.conf"
 echo "The configuration file is located at /usr/local/etc/influxdb.conf"
 =======
 >>>>>>> fix persistence
-=======
->>>>>>> Jails/influxdb (#4)
 echo ""
