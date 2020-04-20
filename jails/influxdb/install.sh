@@ -7,20 +7,18 @@
 #
 #####
 
-# Initialise defaults
+# Initialise variables
 JAIL_NAME="influxdb"
 JAIL_IP="$(sed 's|\(.*\)/.*|\1|' <<<"${influxdb_ip4_addr}" )"
 INCLUDES_PATH="${SCRIPT_DIR}/jails/influxdb/includes"
 DATABASE=${influxdb_database}
 
-# Enable influxdb
-iocage exec "${JAIL_NAME}" setenv INFLUX_CONFIG_PATH /usr/local/etc/influxdb.conf
+# Mount and configure proper configuration location
+cp -rf "${INCLUDES_PATH}/influxd.conf" "/mnt/${global_dataset_config}/${JAIL_NAME}/influxd.conf"
+iocage exec "${JAIL_NAME}" mkdir -p /config/db/data /config/db/meta /config/db/wal
+iocage exec "${JAIL_NAME}" chown -R influxd:influxd /config/db
+iocage exec "${JAIL_NAME}" sysrc influxd_conf="/config/influxd.conf"
 iocage exec "${JAIL_NAME}" sysrc influxd_enable="YES"
-
-# Copy and edit pre-written config files
-echo "Copying default config file"
-iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc
-cp "${INCLUDES_PATH}"/influxdb.conf /mnt/"${global_dataset_iocage}"/jails/"${JAIL_NAME}"/root/usr/local/etc/
 
 # Start influxdb and wait for it to startup
 iocage exec "${JAIL_NAME}" service influxd start
@@ -34,11 +32,6 @@ else
   exit 1
 fi
 
-iocage exec "${JAIL_NAME}" service influxd restart
-	
-# Don't need /mnt/includes any more, so unmount it
-iocage fstab -r "${JAIL_NAME}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
-
 # Done!
 echo "Installation complete!"
 <<<<<<< HEAD
@@ -50,6 +43,7 @@ echo ""
 echo "Database Information"
 echo "--------------------"
 echo "Database = ${DATABASE} at http://${JAIL_IP}:8086."
+<<<<<<< HEAD
 echo ""
 echo "Configuration Information"
 echo "-------------------------"
@@ -58,4 +52,6 @@ echo "-------------------------"
 echo "Configuration located at /usr/local/etc/influxdb.conf"
 >>>>>>> update dev
 echo "The configuration file is located at /usr/local/etc/influxdb.conf"
+=======
+>>>>>>> fix persistence
 echo ""
