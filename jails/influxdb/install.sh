@@ -34,24 +34,10 @@ fi
 
 # Done!
 echo "Installation complete!"
-<<<<<<< HEAD
-=======
 echo "Your may connect InfluxDB plugins to the InfluxDB jail at http://${JAIL_IP}:8086."
->>>>>>> update dev
 echo "You may connect InfluxDB plugins to the InfluxDB jail at http://${JAIL_IP}:8086."
 echo ""
 echo "Database Information"
 echo "--------------------"
 echo "Database = ${DATABASE} at http://${JAIL_IP}:8086."
-<<<<<<< HEAD
-echo ""
-echo "Configuration Information"
-echo "-------------------------"
-<<<<<<< HEAD
-=======
-echo "Configuration located at /usr/local/etc/influxdb.conf"
->>>>>>> update dev
-echo "The configuration file is located at /usr/local/etc/influxdb.conf"
-=======
->>>>>>> fix persistence
 echo ""
