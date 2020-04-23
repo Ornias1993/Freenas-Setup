@@ -102,8 +102,10 @@ influxdb: influxdb
 unifi: unifi
   ip4_addr: 192.168.1.251/24
   gateway: 192.168.1.1
-  pkgs: perl5 unifi5 
-  db_jail: influxdb #Name of the database jail
-  db_name: unifi #Name of influxdb database, if already created ~NOT THE JAIL NAME~
+  pkgs: jq unifi5
+  db_jail: influxdb 
+  db_name: unifi 
   db_user: unifi-poller
   db_password: unifi-poller
+  up_user: upoller
+  up_password: upoller

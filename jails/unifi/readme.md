@@ -2,21 +2,8 @@
 
 ### Installation:
 - This jail requires an existing InfluxDB jail. InfluxDB may be created using the same install command, as long as influxdb is listed first. 
-- Once the script runs, a user must be created in the Unifi Controller software for Unifi-Poller. 
+- Once the script runs, a user must be created in the Unifi Controller software for your Unifi-Poller user. 
 - To view the data from Unifi-Poller, Grafana is required. Add the unifi InfluxDB database as a data source in Grafana.
-
-### Defaults
-- Database Jail: influxdb
-- Database name: influxdb
-- Database user: unifipoller
-- Database password: unifipoller
-
-If the default db user and/or password is changed, the conf file must be changed as well, located at /usr/local/etc/rc.d/unifi-poller/up.conf
-
-### Updates
-- Unifi Controller is updated automatically when the update script runs.
-- Unifi Poller must be manually updated if the script has not been updated with the newest release.
-  https://github.com/unifi-poller/unifi-poller/wiki/Updating#freebsd
 
 ## Unifi Controller documentation can be found at https://www.ui.com/download/unifi/default/default/unifi-controller-v5-user-guide
 
