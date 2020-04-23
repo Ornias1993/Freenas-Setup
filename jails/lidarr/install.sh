@@ -10,7 +10,6 @@ createmount lidarr ${global_dataset_media}
 createmount lidarr ${global_dataset_media}/music /mnt/music
 
 
-iocage exec lidarr ln -s /usr/local/bin/mono /usr/bin/mono
 iocage exec lidarr "fetch https://github.com/lidarr/Lidarr/releases/download/v0.2.0.371/Lidarr.develop.0.2.0.371.linux.tar.gz -o /usr/local/share"
 iocage exec lidarr "tar -xzvf /usr/local/share/Lidarr.develop.0.2.0.371.linux.tar.gz -C /usr/local/share"
 iocage exec lidarr "rm /usr/local/share/Lidarr.develop.0.2.0.371.linux.tar.gz"
