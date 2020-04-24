@@ -72,6 +72,7 @@ Basic means: The same setup as a FreeNAS plugin would've, DHCP on bridge0.
 - py-kms
 - nextcloud
 - bitwarden
+- unifi controller
 
 #### Backend
 - mariadb
