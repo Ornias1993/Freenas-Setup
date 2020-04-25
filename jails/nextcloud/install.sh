@@ -5,16 +5,26 @@
 
 # Initialise defaults
 JAIL_NAME="nextcloud"
-JAIL_IP="$(sed 's|\(.*\)/.*|\1|' <<<"${nextcloud_ip4_addr}" )"
+# shellcheck disable=SC2154
+JAIL_IP="${nextcloud_ip4_addr%/*}"
+# shellcheck disable=SC2154
 DATABASE="$nextcloud_database"
 INCLUDES_PATH="${SCRIPT_DIR}/jails/nextcloud/includes"
+# shellcheck disable=SC2154
 STANDALONE_CERT=${nextcloud_standalone_cert}
+# shellcheck disable=SC2154
 SELFSIGNED_CERT=${nextcloud_selfsigned_cert}
+# shellcheck disable=SC2154
 DNS_CERT=${nextcloud_dns_cert}
+# shellcheck disable=SC2154
 NO_CERT=${nextcloud_no_cert}
+# shellcheck disable=SC2154
 DL_FLAGS=${nextcloud_dl_flags}
+# shellcheck disable=SC2154
 DNS_SETTING=${nextcloud_dns_settings}
+# shellcheck disable=SC2154
 CERT_EMAIL=${nextcloud_cert_email}
+# shellcheck disable=SC2154
 HOST_NAME=${nextcloud_host_name}
 
 # Only generate new DB passwords when using buildin database
@@ -22,9 +32,13 @@ HOST_NAME=${nextcloud_host_name}
 
 if [ "${DATABASE}" = "pgsql-external" ]; then
   DB_NAME="PostgreSQL"
+  # shellcheck disable=SC2154
   DB_HOST="${nextcloud_db_host}"
+  # shellcheck disable=SC2154
   DB_DATABASE="${nextcloud_db_database}"
+  # shellcheck disable=SC2154
   DB_USER="${nextcloud_db_user}"
+  # shellcheck disable=SC2154
   DB_PASSWORD="${nextcloud_db_password}"
 elif [ "${DATABASE}" = "mariadb-external" ]; then
   DB_NAME="MariaDB"
@@ -35,7 +49,8 @@ elif [ "${DATABASE}" = "mariadb-external" ]; then
 elif [ "${DATABASE}" = "mariadb-jail" ]; then
   DB_DATABASE="nextcloud"
   DB_USER="nextcloud"
-  DB_HOST="$(sed 's|\(.*\)/.*|\1|' <<<"${mariadb_ip4_addr}"):3306"
+  # shellcheck disable=SC2154
+  DB_HOST="${mariadb_ip4_addr%/*}:3306"
   DB_PASSWORD="${nextcloud_db_password}"
 else
   echo "Invalid ${JAIL_NAME}_database selected please select one from the following options:"
@@ -84,6 +99,7 @@ if [ -z "${DB_DATABASE}" ]; then
   exit 1
 fi
 
+# shellcheck disable=SC2154
 if [ -z "${nextcloud_time_zone}" ]; then
   echo 'Configuration error: TIME_ZONE must be set'
   exit 1
@@ -92,35 +108,36 @@ if [ -z "${HOST_NAME}" ]; then
   echo 'Configuration error: HOST_NAME must be set'
   exit 1
 fi
-if [ $STANDALONE_CERT -eq 0 ] && [ $DNS_CERT -eq 0 ] && [ $NO_CERT -eq 0 ] && [ $SELFSIGNED_CERT -eq 0 ]; then
+if [ "$STANDALONE_CERT" -eq 0 ] && [ "$DNS_CERT" -eq 0 ] && [ "$NO_CERT" -eq 0 ] && [ "$SELFSIGNED_CERT" -eq 0 ]; then
   echo 'Configuration error: Either STANDALONE_CERT, DNS_CERT, NO_CERT,'
   echo 'or SELFSIGNED_CERT must be set to 1.'
   exit 1
 fi
-if [ $STANDALONE_CERT -eq 1 ] && [ $DNS_CERT -eq 1 ] ; then
+if [ "$STANDALONE_CERT" -eq 1 ] && [ "$DNS_CERT" -eq 1 ] ; then
   echo 'Configuration error: Only one of STANDALONE_CERT and DNS_CERT'
   echo 'may be set to 1.'
   exit 1
 fi
 
-if [ $DNS_CERT -eq 1 ] && [ -z "${DNS_PLUGIN}" ] ; then
+if [ "$DNS_CERT" -eq 1 ] && [ -z "${DNS_PLUGIN}" ] ; then
   echo "DNS_PLUGIN must be set to a supported DNS provider."
   echo "See https://caddyserver.com/docs under the heading of \"DNS Providers\" for list."
   echo "Be sure to omit the prefix of \"tls.dns.\"."
   exit 1
 fi  
-if [ $DNS_CERT -eq 1 ] && [ -z "${DNS_ENV}" ] ; then
+if [ "$DNS_CERT" -eq 1 ] && [ -z "${DNS_ENV}" ] ; then
   echo "DNS_ENV must be set to a your DNS provider\'s authentication credentials."
   echo "See https://caddyserver.com/docs under the heading of \"DNS Providers\" for more."
   exit 1
 fi  
 
-if [ $DNS_CERT -eq 1 ] ; then
+if [ "$DNS_CERT" -eq 1 ] ; then
   DL_FLAGS="tls.dns.${DNS_PLUGIN}"
   DNS_SETTING="dns ${DNS_PLUGIN}"
 fi
 
 # Make sure DB_PATH is empty -- if not, MariaDB/PostgreSQL will choke
+# shellcheck disable=SC2154
 if [ "$(ls -A "/mnt/${global_dataset_config}/${JAIL_NAME}/config")" ]; then
 	echo "Reinstall of Nextcloud detected... "
 	echo "External database selected, unable to verify compatibility. REINSTALL MIGHT NOT WORK... Continuing"
@@ -135,9 +152,9 @@ fi
 #####
 
 # Create and Mount Nextcloud, Config and Files
-createmount ${JAIL_NAME} ${global_dataset_config}/${JAIL_NAME}/config /usr/local/www/nextcloud/config
-createmount ${JAIL_NAME} ${global_dataset_config}/${JAIL_NAME}/themes /usr/local/www/nextcloud/themes
-createmount ${JAIL_NAME} ${global_dataset_config}/${JAIL_NAME}/files /config/files
+createmount ${JAIL_NAME} "${global_dataset_config}"/${JAIL_NAME}/config /usr/local/www/nextcloud/config
+createmount ${JAIL_NAME} "${global_dataset_config}"/${JAIL_NAME}/themes /usr/local/www/nextcloud/themes
+createmount ${JAIL_NAME} "${global_dataset_config}"/${JAIL_NAME}/files /config/files
 
 # Install includes fstab
 iocage exec "${JAIL_NAME}" mkdir -p /mnt/includes
@@ -197,7 +214,7 @@ iocage exec "${JAIL_NAME}" chown -R www:www /usr/local/www/nextcloud/
 
 
 # Generate and install self-signed cert, if necessary
-if [ $SELFSIGNED_CERT -eq 1 ] && [ ! -f "/mnt/${global_dataset_config}/${JAIL_NAME}/ssl/privkey.pem" ]; then
+if [ "$SELFSIGNED_CERT" -eq 1 ] && [ ! -f "/mnt/${global_dataset_config}/${JAIL_NAME}/ssl/privkey.pem" ]; then
 	echo "No ssl certificate present, generating self signed certificate"
 	if [ ! -d "/mnt/${global_dataset_config}/${JAIL_NAME}/ssl" ]; then
 		echo "cert folder not existing... creating..."
@@ -212,13 +229,13 @@ fi
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/php.ini /usr/local/etc/php.ini
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/redis.conf /usr/local/etc/redis.conf
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/www.conf /usr/local/etc/php-fpm.d/
-if [ $STANDALONE_CERT -eq 1 ] || [ $DNS_CERT -eq 1 ]; then
+if [ "$STANDALONE_CERT" -eq 1 ] || [ "$DNS_CERT" -eq 1 ]; then
   iocage exec "${JAIL_NAME}" cp -f /mnt/includes/remove-staging.sh /root/
 fi
-if [ $NO_CERT -eq 1 ]; then
+if [ "$NO_CERT" -eq 1 ]; then
   echo "Copying Caddyfile for no SSL"
   iocage exec "${JAIL_NAME}" cp -f /mnt/includes/Caddyfile-nossl /usr/local/www/Caddyfile
-elif [ $SELFSIGNED_CERT -eq 1 ]; then
+elif [ "$SELFSIGNED_CERT" -eq 1 ]; then
   echo "Copying Caddyfile for self-signed cert"
   iocage exec "${JAIL_NAME}" cp -f /mnt/includes/Caddyfile-selfsigned /usr/local/www/Caddyfile
 else
@@ -277,7 +294,7 @@ else
 	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set memcache.locking --value="\OC\Memcache\Redis"'
 	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwritehost --value=\"${HOST_NAME}\""
 	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwriteprotocol --value=\"https\""
-	if [ $NO_CERT -eq 1 ]; then
+	if [ "$NO_CERT" -eq 1 ]; then
 		iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"http://${HOST_NAME}/\""
 	else
 		iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"https://${HOST_NAME}/\""
@@ -303,7 +320,7 @@ iocage fstab -r "${JAIL_NAME}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
 
 # Done!
 echo "Installation complete!"
-if [ $NO_CERT -eq 1 ]; then
+if [ "$NO_CERT" -eq 1 ]; then
   echo "Using your web browser, go to http://${HOST_NAME} to log in"
 else
   echo "Using your web browser, go to https://${HOST_NAME} to log in"
@@ -325,14 +342,14 @@ else
 fi
 
 echo ""
-if [ $STANDALONE_CERT -eq 1 ] || [ $DNS_CERT -eq 1 ]; then
+if [ "$STANDALONE_CERT" -eq 1 ] || [ "$DNS_CERT" -eq 1 ]; then
   echo "You have obtained your Let's Encrypt certificate using the staging server."
   echo "This certificate will not be trusted by your browser and will cause SSL errors"
   echo "when you connect.  Once you've verified that everything else is working"
   echo "correctly, you should issue a trusted certificate.  To do this, run:"
   echo "  iocage exec ${JAIL_NAME} /root/remove-staging.sh"
   echo ""
-elif [ $SELFSIGNED_CERT -eq 1 ]; then
+elif [ "$SELFSIGNED_CERT" -eq 1 ]; then
   echo "You have chosen to create a self-signed TLS certificate for your Nextcloud"
   echo "installation.  This certificate will not be trusted by your browser and"
   echo "will cause SSL errors when you connect.  If you wish to replace this certificate"

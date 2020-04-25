@@ -8,9 +8,12 @@
 
 # Initialise defaults
 JAIL_NAME="mariadb"
-JAIL_IP="$(sed 's|\(.*\)/.*|\1|' <<<"${mariadb_ip4_addr}" )"
+# shellcheck disable=SC2154
+JAIL_IP="${mariadb_ip4_addr%/*}"
 INCLUDES_PATH="${SCRIPT_DIR}/jails/mariadb/includes"
+# shellcheck disable=SC2154
 CERT_EMAIL=${mariadb_cert_email}
+# shellcheck disable=SC2154
 DB_ROOT_PASSWORD=${mariadb_db_root_password}
 DB_NAME="MariaDB"
 DL_FLAGS=""
@@ -23,16 +26,16 @@ if [ -z "${mariadb_ip4_addr}" ]; then
 fi
 
 # Make sure DB_PATH is empty -- if not, MariaDB/PostgreSQL will choke
-
+# shellcheck disable=SC2154
 if [ "$(ls -A "/mnt/${global_dataset_config}/${JAIL_NAME}/db")" ]; then
 	echo "Reinstall of mariadb detected... Continuing"
 	REINSTALL="true"
 fi
 
 # Mount database dataset and set zfs preferences
-createmount ${JAIL_NAME} ${global_dataset_config}/${JAIL_NAME}/db /var/db/mysql
-zfs set recordsize=16K ${global_dataset_config}/${JAIL_NAME}/db
-zfs set primarycache=metadata ${global_dataset_config}/${JAIL_NAME}/db
+createmount ${JAIL_NAME} "${global_dataset_config}"/${JAIL_NAME}/db /var/db/mysql
+zfs set recordsize=16K "${global_dataset_config}"/${JAIL_NAME}/db
+zfs set primarycache=metadata "${global_dataset_config}"/${JAIL_NAME}/db
 
 iocage exec "${JAIL_NAME}" chown -R 88:88 /var/db/mysql
 
@@ -62,6 +65,7 @@ iocage exec "${JAIL_NAME}" sysrc mysql_enable="YES"
 echo "Copying Caddyfile for no SSL"
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/caddy /usr/local/etc/rc.d/
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/Caddyfile /usr/local/www/Caddyfile
+# shellcheck disable=SC2154
 iocage exec "${JAIL_NAME}" sed -i '' "s/yourhostnamehere/${mariadb_host_name}/" /usr/local/www/Caddyfile
 iocage exec "${JAIL_NAME}" sed -i '' "s/JAIL-IP/${JAIL_IP}/" /usr/local/www/Caddyfile
 

@@ -8,10 +8,11 @@ iocage exec organizr sed -i '' -e 's/;listen.mode = 0660/listen.mode = 0600/g' /
 iocage exec organizr cp /usr/local/etc/php.ini-production /usr/local/etc/php.ini
 iocage exec organizr sed -i '' -e 's?;date.timezone =?date.timezone = "Universal"?g' /usr/local/etc/php.ini
 iocage exec organizr sed -i '' -e 's?;cgi.fix_pathinfo=1?cgi.fix_pathinfo=0?g' /usr/local/etc/php.ini
-mv /mnt/${global_dataset_iocage}/jails/organizr/root/usr/local/etc/nginx/nginx.conf /mnt/${global_dataset_iocage}/jails/organizr/root/usr/local/etc/nginx/nginx.conf.bak
-cp ${SCRIPT_DIR}/jails/organizr/includes/nginx.conf /mnt/${global_dataset_iocage}/jails/organizr/root/usr/local/etc/nginx/nginx.conf
-cp -Rf ${SCRIPT_DIR}/jails/organizr/includes/custom /mnt/${global_dataset_iocage}/jails/organizr/root/usr/local/etc/nginx/custom
-
+# shellcheck disable=SC2154
+mv /mnt/"${global_dataset_iocage}"/jails/organizr/root/usr/local/etc/nginx/nginx.conf /mnt/"${global_dataset_iocage}"/jails/organizr/root/usr/local/etc/nginx/nginx.conf.bak
+cp "${SCRIPT_DIR}"/jails/organizr/includes/nginx.conf /mnt/"${global_dataset_iocage}"/jails/organizr/root/usr/local/etc/nginx/nginx.conf
+cp -Rf "${SCRIPT_DIR}"/jails/organizr/includes/custom /mnt/"${global_dataset_iocage}"/jails/organizr/root/usr/local/etc/nginx/custom
+# shellcheck disable=SC2154
 if [ ! -d "/mnt/${global_dataset_config}/organizr/ssl" ]; then
 	echo "cert folder doesn't exist... creating..."
 	iocage exec organizr mkdir /config/ssl
@@ -21,7 +22,7 @@ if [ -f "/mnt/${global_dataset_config}/organizr/ssl/Organizr-Cert.crt" ]; then
     echo "certificate exists... Skipping cert generation"
 else
 	echo "No ssl certificate present, generating self signed certificate"
-	openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=localhost" -keyout /mnt/${global_dataset_config}/organizr/ssl/Organizr-Cert.key -out /mnt/${global_dataset_config}/organizr/ssl/Organizr-Cert.crt
+	openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=localhost" -keyout /mnt/"${global_dataset_config}"/organizr/ssl/Organizr-Cert.key -out /mnt/"${global_dataset_config}"/organizr/ssl/Organizr-Cert.crt
 fi
 
 iocage exec organizr git clone https://github.com/causefx/Organizr.git /usr/local/www/Organizr

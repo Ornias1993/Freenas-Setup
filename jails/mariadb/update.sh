@@ -2,7 +2,8 @@
 # This file contains the update script for mariadb
 
 JAIL_NAME="mariadb"
-JAIL_IP="$(sed 's|\(.*\)/.*|\1|' <<<"${mariadb_ip4_addr}" )"
+# shellcheck disable=SC2154
+JAIL_IP="${mariadb_ip4_addr%/*}"
 INCLUDES_PATH="${SCRIPT_DIR}/jails/mariadb/includes"
 
 # Install includes fstab
@@ -24,6 +25,7 @@ fi
 echo "Copying Caddyfile for no SSL"
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/caddy /usr/local/etc/rc.d/
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/Caddyfile /usr/local/www/Caddyfile
+# shellcheck disable=SC2154
 iocage exec "${JAIL_NAME}" sed -i '' "s/yourhostnamehere/${mariadb_host_name}/" /usr/local/www/Caddyfile
 iocage exec "${JAIL_NAME}" sed -i '' "s/JAIL-IP/${JAIL_IP}/" /usr/local/www/Caddyfile
 

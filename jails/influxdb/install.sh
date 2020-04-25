@@ -9,11 +9,14 @@
 
 # Initialise variables
 JAIL_NAME="influxdb"
-JAIL_IP="$(sed 's|\(.*\)/.*|\1|' <<<"${influxdb_ip4_addr}" )"
+# shellcheck disable=SC2154
+JAIL_IP="${influxdb_ip4_addr%/*}"
 INCLUDES_PATH="${SCRIPT_DIR}/jails/influxdb/includes"
-DATABASE=${influxdb_database}
+# shellcheck disable=SC2154
+DATABASE="${influxdb_database}"
 
 # Mount and configure proper configuration location
+# shellcheck disable=SC2154
 cp -rf "${INCLUDES_PATH}/influxd.conf" "/mnt/${global_dataset_config}/${JAIL_NAME}/influxd.conf"
 iocage exec "${JAIL_NAME}" mkdir -p /config/db/data /config/db/meta /config/db/wal
 iocage exec "${JAIL_NAME}" chown -R influxd:influxd /config/db

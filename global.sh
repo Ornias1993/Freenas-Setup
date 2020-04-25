@@ -3,12 +3,15 @@
 
 # yml Parser function
 # Based on https://gist.github.com/pkuczynski/8665367
+# shellcheck disable=SC2086
 parse_yaml() {
-   local prefix=$2
-   local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
+   prefix=${2}
+   s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
+   local prefix
+   local s w fs
    sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
-        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p"  $1 |
-   awk -F$fs '{
+        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p"  "${1}" |
+   awk -F"${fs}" '{
       indent = length($1)/2;
       vname[indent] = $2;
       for (i in vname) {if (i > indent) {delete vname[i]}}
@@ -24,12 +27,12 @@ gitupdate() {
 echo "checking for updates using Branch: $1"
 git fetch
 git update-index -q --refresh
-CHANGED=$(git diff --name-only origin/$1)
-if [ ! -z "$CHANGED" ];
+CHANGED=$(git diff --name-only origin/"$1")
+if [ -n "$CHANGED" ];
 then
     echo "script requires update"
     git reset --hard
-    git checkout $1
+    git checkout "${1}"
     git pull
     echo "script updated, please restart the script manually"
     exit 1
@@ -64,17 +67,20 @@ if [ -z "${!jailname}" ]; then
 	exit 1
 else
 	echo "Creating jail for $1"
+	# shellcheck disable=SC2154
 	pkgs="$(sed 's/[^[:space:]]\{1,\}/"&"/g;s/ /,/g' <<<"${global_jails_pkgs} ${!jailpkgs}")"
-	echo '{"pkgs":['${pkgs}']}' > /tmp/pkg.json
+	echo '{"pkgs":['"${pkgs}"']}' > /tmp/pkg.json
 	if [ "${setdhcp}" == "on" ]
 	then
-		if ! iocage create -n "${1}" -p /tmp/pkg.json -r ${global_jails_version} interfaces="${jailinterfaces}" dhcp="on" vnet="on" allow_raw_sockets="1" boot="on" -b
+		# shellcheck disable=SC2154
+		if ! iocage create -n "${1}" -p /tmp/pkg.json -r "${global_jails_version}" interfaces="${jailinterfaces}" dhcp="on" vnet="on" allow_raw_sockets="1" boot="on" -b
 		then
 			echo "Failed to create jail"
 			exit 1
 		fi
 	else
-		if ! iocage create -n "${1}" -p /tmp/pkg.json -r ${global_jails_version} interfaces="${jailinterfaces}" ip4_addr="vnet0|${!jailip4}" defaultrouter="${!jailgateway}" vnet="on" allow_raw_sockets="1" boot="on" -b
+		# shellcheck disable=SC2154
+		if ! iocage create -n "${1}" -p /tmp/pkg.json -r "${global_jails_version}" interfaces="${jailinterfaces}" ip4_addr="vnet0|${!jailip4}" defaultrouter="${!jailgateway}" vnet="on" allow_raw_sockets="1" boot="on" -b
 		then
 			echo "Failed to create jail"
 			exit 1
@@ -84,19 +90,19 @@ else
 
 	rm /tmp/pkg.json
 	echo "creating jail config directory"
-	
-	createmount $1 ${global_dataset_config}
-	createmount $1 ${global_dataset_config}/$1 /config
+	# shellcheck disable=SC2154
+	createmount "${1}" "${global_dataset_config}"
+	createmount "${1}" "${global_dataset_config}"/"${1}" /config
 	
 	# Create and Mount portsnap
 	echo "Mounting and fetching ports"
-	createmount $1 ${global_dataset_config}/portsnap
-	createmount $1 ${global_dataset_config}/portsnap/db /var/db/portsnap
-	createmount $1 ${global_dataset_config}/portsnap/ports /usr/ports
+	createmount "${1}" "${global_dataset_config}"/portsnap
+	createmount "${1}" "${global_dataset_config}"/portsnap/db /var/db/portsnap
+	createmount "${1}" "${global_dataset_config}"/portsnap/ports /usr/ports
 	
-	iocage exec "$1" "if [ -z /usr/ports ]; then portsnap fetch extract; else portsnap auto; fi"
+	iocage exec "${1}" "if [ -z /usr/ports ]; then portsnap fetch extract; else portsnap auto; fi"
 	
-	echo "Jail creation completed for $1"
+	echo "Jail creation completed for ${1}"
 fi	
 	
 }
@@ -112,17 +118,17 @@ createmount() {
 	else
 		if [ ! -d "/mnt/$2" ]; then
 			echo "Dataset does not exist... Creating... $2"
-			zfs create $2
+			zfs create "${2}"
 		else
 			echo "Dataset already exists, skipping creation of $2"
 		fi
 
 		if [ -n "$1" ] && [ -n "$3" ]; then
-			iocage exec $1 mkdir -p $3
-			if [ -n "$4" ]; then
-				iocage fstab -a $1 /mnt/$2 $3 $4
+			iocage exec "${1}" mkdir -p "${3}"
+			if [ -n "${4}" ]; then
+				iocage fstab -a "${1}" /mnt/"${2}" "${3}" "${4}"
 			else
-				iocage fstab -a $1 /mnt/$2 $3 nullfs rw 0 0
+				iocage fstab -a "${1}" /mnt/"${2}" "${3}" nullfs rw 0 0
 			fi
 		else
 			echo "No Jail Name or Mount target specified, not mounting dataset"

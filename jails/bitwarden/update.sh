@@ -7,10 +7,14 @@
 JAIL_NAME="bitwarden"
 DB_DATABASE=${JAIL_NAME}
 DB_USER=${JAIL_NAME}
+# shellcheck disable=SC2154
 INSTALL_TYPE=${bitwarden_type}
-DB_HOST="$(sed 's|\(.*\)/.*|\1|' <<<"${mariadb_ip4_addr}"):3306"
+# shellcheck disable=SC2154
+DB_HOST="${mariadb_ip4_addr%/*}:3306"
+# shellcheck disable=SC2154
 DB_PASSWORD="${bitwarden_db_password}"
 DB_STRING="mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_DATABASE}"
+# shellcheck disable=SC2154
 ADMIN_TOKEN=${bitwarden_admin_token}
 
 if [ -z "${ADMIN_TOKEN}" ]; then
@@ -39,17 +43,18 @@ fi
 iocage exec ${JAIL_NAME} cp -r /usr/local/share/bitwarden/src/target/release /usr/local/share/bitwarden/bin
 
 # Download and install webvault
-WEB_RELEASE_URL=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/dani-garcia/bw_web_builds/releases/latest)
+WEB_RELEASE_URL=$(curl -Ls -o /dev/null -w "%{url_effective}" https://github.com/dani-garcia/bw_web_builds/releases/latest)
 WEB_TAG="${WEB_RELEASE_URL##*/}"
 iocage exec ${JAIL_NAME} "fetch http://github.com/dani-garcia/bw_web_builds/releases/download/$WEB_TAG/bw_web_$WEB_TAG.tar.gz -o /usr/local/share/bitwarden"
 iocage exec ${JAIL_NAME} "tar -xzvf /usr/local/share/bitwarden/bw_web_$WEB_TAG.tar.gz -C /usr/local/share/bitwarden/"
-iocage exec ${JAIL_NAME} rm /usr/local/share/bitwarden/bw_web_$WEB_TAG.tar.gz
+iocage exec ${JAIL_NAME} rm /usr/local/share/bitwarden/bw_web_"$WEB_TAG".tar.gz
 
 iocage exec ${JAIL_NAME} chown -R bitwarden:bitwarden /usr/local/share/bitwarden /config
-cp ${SCRIPT_DIR}/jails/${JAIL_NAME}/includes/bitwarden.rc /mnt/${global_dataset_iocage}/jails/${JAIL_NAME}/root/usr/local/etc/rc.d/bitwarden
-cp ${SCRIPT_DIR}/jails/${JAIL_NAME}/includes/bitwarden.rc.conf /mnt/${global_dataset_iocage}/jails/${JAIL_NAME}/root/usr/local/etc/rc.conf.d/bitwarden
-echo 'export DATABASE_URL="'${DB_STRING}'"' >> /mnt/${global_dataset_iocage}/jails/${JAIL_NAME}/root/usr/local/etc/rc.conf.d/bitwarden
-echo 'export ADMIN_TOKEN="'${ADMIN_TOKEN}'"' >> /mnt/${global_dataset_iocage}/jails/${JAIL_NAME}/root/usr/local/etc/rc.conf.d/bitwarden
+# shellcheck disable=SC2154
+cp "${SCRIPT_DIR}"/jails/${JAIL_NAME}/includes/bitwarden.rc /mnt/"${global_dataset_iocage}"/jails/${JAIL_NAME}/root/usr/local/etc/rc.d/bitwarden
+cp "${SCRIPT_DIR}"/jails/${JAIL_NAME}/includes/bitwarden.rc.conf /mnt/"${global_dataset_iocage}"/jails/${JAIL_NAME}/root/usr/local/etc/rc.conf.d/bitwarden
+echo 'export DATABASE_URL="'"${DB_STRING}"'"' >> /mnt/"${global_dataset_iocage}"/jails/${JAIL_NAME}/root/usr/local/etc/rc.conf.d/bitwarden
+echo 'export ADMIN_TOKEN="'"${ADMIN_TOKEN}"'"' >> /mnt/"${global_dataset_iocage}"/jails/${JAIL_NAME}/root/usr/local/etc/rc.conf.d/bitwarden
 
 if [ "${ADMIN_TOKEN}" == "NONE" ]; then
 	echo "Admin_token set to NONE, disabling admin portal"

@@ -2,13 +2,14 @@
 # This file contains the install script for transmission
 
 # Check if dataset Downloads dataset exist, create if they do not.
-createmount transmission ${global_dataset_downloads} /mnt/downloads
+# shellcheck disable=SC2154
+createmount transmission "${global_dataset_downloads}" /mnt/downloads
 
 # Check if dataset Complete Downloads dataset exist, create if they do not.
-createmount transmission ${global_dataset_downloads}/complete /mnt/downloads/complete
+createmount transmission "${global_dataset_downloads}"/complete /mnt/downloads/complete
 
 # Check if dataset InComplete Downloads dataset exist, create if they do not.
-createmount transmission ${global_dataset_downloads}/incomplete /mnt/downloads/incomplete
+createmount transmission "${global_dataset_downloads}"/incomplete /mnt/downloads/incomplete
 
 
 iocage exec transmission chown -R transmission:transmission /config
