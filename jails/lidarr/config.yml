@@ -1,2 +1,2 @@
 lidarr: lidarr
-  pkgs: mono
+  pkgs: mono mediainfo sqlite3
