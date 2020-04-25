@@ -21,15 +21,15 @@ iocage exec plex chown -R plex:plex /config
 iocage exec plex pkg update
 iocage exec plex pkg upgrade -y
 
-# Run different install procedures depending on Plex vs Plexpass
-if [ "$plex_plexpass" == "true" ]; then
-	echo "plexpass enabled in config.yml... using plexpass for install"
+# Run different install procedures depending on Plex vs Plex Beta
+if [ "$plex_beta" == "true" ]; then
+	echo "beta enabled in config.yml... using plex beta for install"
 	iocage exec plex sysrc "plexmediaserver_plexpass_enable=YES"
 	iocage exec plex sysrc plexmediaserver_plexpass_support_path="/config"
 	iocage exec plex chown -R plex:plex /usr/local/share/plexmediaserver-plexpass/
 	iocage exec plex service plexmediaserver_plexpass restart
 else
-	echo "plexpass disabled in config.yml... NOT using plexpass for install"
+	echo "beta disabled in config.yml... NOT using plex beta for install"
 	iocage exec plex sysrc "plexmediaserver_enable=YES"
 	iocage exec plex sysrc plexmediaserver_support_path="/config"
 	iocage exec plex chown -R plex:plex /usr/local/share/plexmediaserver/

@@ -30,7 +30,7 @@ example: example
   pkgs: mono
   
 plex: plex
-  plexpass: false
+  beta: false
 
 nextcloud: nextcloud
   ip4_addr: 192.168.1.99/24
