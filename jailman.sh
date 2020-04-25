@@ -84,6 +84,9 @@ while getopts ":i:r:u:d:g:h" opt
      esac
 done
 
+global_dataset_iocage=$(zfs get -H -o value mountpoint $(iocage get -p)/iocage)
+global_dataset_iocage=${global_dataset_iocage#/mnt/}
+
 # Parse the Config YAML
 eval $(parse_yaml config.yml)
 

@@ -3,8 +3,6 @@ global:
   dataset:
    # dataset for internal jail config files
    config: tank/apps
-   # Iocage root dataset
-   iocage: $(zfs get -H -o value mountpoint $(iocage get -p)/iocage)
    # Media library dataset
    media: tank/media
    # Parent downloads dataset 
