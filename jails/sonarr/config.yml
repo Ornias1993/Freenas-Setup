@@ -1,0 +1,2 @@
+sonarr: sonarr
+  pkgs: mono mediainfo sqlite3

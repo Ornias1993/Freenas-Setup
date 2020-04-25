@@ -1,0 +1,2 @@
+bitwarden: bitwarden
+  pkgs: sqlite3 nginx git sudo vim-tiny bash node npm python27-2.7.17_1 mariadb104-client

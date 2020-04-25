@@ -28,42 +28,15 @@ example: example
   # Jail specific pkgs. 
   # Please use standard space delimited pkg install syntax.
   pkgs: mono
- 
-jackett: jackett
-  pkgs: mono
- 
-radarr: radarr
-  pkgs: mono mediainfo sqlite3 libgdiplus
- 
-sonarr: sonarr
-  pkgs: mono mediainfo sqlite3
- 
-lidarr: lidarr
-  pkgs: mono mediainfo sqlite3
- 
-transmission: transmission
-  pkgs: bash unzip unrar transmission
   
 plex: plex
   plexpass: false
-  pkgs: plexmediaserver
-  
-tautulli: tautulli
-  pkgs: python2 py27-sqlite3 py27-openssl git
-  
-organizr: organizr
-  pkgs: nginx php72 php72-filter php72-curl php72-hash php72-json php72-openssl php72-pdo php72-pdo_sqlite php72-session php72-simplexml php72-sqlite3 php72-zip git
-  
-kms: kms
-  pkgs: bash py37-tkinter py37-pip py37-sqlite3 git
-
 
 nextcloud: nextcloud
   ip4_addr: 192.168.1.99/24
   gateway: 192.168.1.1
   time_zone: Europe/Amsterdam
   host_name: cloud.example.com
-  pkgs:   nano sudo redis php73-ctype gnupg php73-dom php73-gd php73-iconv php73-json php73-mbstring php73-posix php73-simplexml php73-xmlreader php73-xmlwriter php73-zip php73-zlib php73-hash php73-xml php73 php73-pecl-redis php73-session php73-wddx php73-xsl php73-filter php73-pecl-APCu php73-curl php73-fileinfo php73-bz2 php73-intl php73-openssl php73-ldap php73-ftp php73-imap php73-exif php73-gmp php73-pecl-memcache php73-pecl-imagick perl5 p5-Locale-gettext help2man texinfo m4 autoconf
   database: mariadb
   standalone_cert: 0
   selfsigned_cert: 0
@@ -81,14 +54,12 @@ nextcloud: nextcloud
 mariadb: mariadb
   ip4_addr: 192.168.1.98/24
   gateway: 192.168.1.1
-  pkgs: mariadb104-server git  php74-session php74-xml php74-ctype php74-openssl php74-filter php74-gd php74-json php74-mysqli php74-mbstring php74-zlib php74-zip php74-bz2 phpMyAdmin5-php74 php74-pdo_mysql php74-mysqli phpMyAdmin5-php74-5.0.1
   db_root_password: ReplaceThisWithYourOwnRootPAssword
   host_name: mariadb.local.example
 
 bitwarden: bitwarden
   ip4_addr: 192.168.1.97/24
   gateway: 192.168.1.1
-  pkgs: sqlite3 nginx git sudo vim-tiny bash node npm python27-2.7.17_1 mariadb104-client
   db_password: "YourDBPasswordHerePLEASE"
   type: mariadb
   admin_token: "PUTYOURADMINTOKENHEREANDREMOVETHIS"
@@ -96,5 +67,4 @@ bitwarden: bitwarden
 influxdb: influxdb
   ip4_addr: 192.168.1.250/24
   gateway: 192.168.1.1
-  pkgs: influxdb
   database: influxdb

@@ -1,0 +1,2 @@
+nextcloud: nextcloud
+  pkgs:   nano sudo redis php73-ctype gnupg php73-dom php73-gd php73-iconv php73-json php73-mbstring php73-posix php73-simplexml php73-xmlreader php73-xmlwriter php73-zip php73-zlib php73-hash php73-xml php73 php73-pecl-redis php73-session php73-wddx php73-xsl php73-filter php73-pecl-APCu php73-curl php73-fileinfo php73-bz2 php73-intl php73-openssl php73-ldap php73-ftp php73-imap php73-exif php73-gmp php73-pecl-memcache php73-pecl-imagick perl5 p5-Locale-gettext help2man texinfo m4 autoconf
