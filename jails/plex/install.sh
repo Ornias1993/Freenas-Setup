@@ -14,6 +14,12 @@ createmount plex ${global_dataset_media}/movies /mnt/media/movies
 createmount plex ${global_dataset_media}/music /mnt/media/music
 createmount plex ${global_dataset_media}/shows /mnt/media/shows
 
+# Create plex ramdisk if specified
+if [ -z "${plex_ramdisk}" ]; then
+	echo "no ramdisk specified for plex, continuing without randisk"
+else
+	iocage fstab -a plex tmpfs /tmp_transcode tmpfs rw,size=${plex_ramdisk},mode=1777 0 0
+fi
 
 iocage exec plex chown -R plex:plex /config
 
