@@ -1,7 +1,7 @@
 #!/usr/local/bin/bash
 # This file contains the update script for Plex
 
-# Run different update procedures depending on Plex vs Plexpass
+# Run different update procedures depending on Plex vs Plex Beta
 if [ "$plex_plexpass" == "true" ]; then
 	echo "beta enabled in config.yml... using plex beta for update..."
 	iocage exec plex service plexmediaserver_plexpass stop
