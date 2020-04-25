@@ -21,6 +21,9 @@ iocage exec plex chown -R plex:plex /config
 iocage exec plex pkg update
 iocage exec plex pkg upgrade -y
 
+# Add plex user to video group for future hw-encoding support
+iocage exec plex pw groupmod -n video -m plex
+
 # Run different install procedures depending on Plex vs Plex Beta
 if [ "$plex_beta" == "true" ]; then
 	echo "beta enabled in config.yml... using plex beta for install"
