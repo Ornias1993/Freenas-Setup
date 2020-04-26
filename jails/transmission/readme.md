@@ -1,4 +1,6 @@
-# Original README from the transmission github:
+# Transmission
+
+## Original README from the transmission github:
 
 https://github.com/transmission/transmission
 

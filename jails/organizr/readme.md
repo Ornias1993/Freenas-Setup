@@ -1,4 +1,6 @@
-# Original README from the Organizr github repo:
+# Organizr
+
+## Original README from the Organizr github repo:
 
 https://github.com/causefx/Organizr
 

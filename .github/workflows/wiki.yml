@@ -1,0 +1,26 @@
+name: Publish docs via GitHub Pages
+on:
+  push:
+    branches:
+      - wiki_dev
+
+jobs:
+  build:
+    name: Deploy docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v1
+        with:
+          ref: 'wiki_dev'
+      - name: rename-readme
+        run: |
+          for pathname in jails/*/README.MD; do ! cp "$pathname" "docs/jails/$( basename "$( dirname "$pathname" )" ).md"; done
+          for pathname in jails/*/README.md; do ! cp "$pathname" "docs/jails/$( basename "$( dirname "$pathname" )" ).md"; done 
+          for pathname in jails/*/readme.md; do ! cp "$pathname" "docs/jails/$( basename "$( dirname "$pathname" )" ).md"; done
+          for pathname in jails/*/Readme.md; do ! cp "$pathname" "docs/jails/$( basename "$( dirname "$pathname" )" ).md"; done
+        shell: bash
+      - name: Deploy docs
+        uses: mhausenblas/mkdocs-deploy-gh-pages@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.WIKI_GH_PAT }}

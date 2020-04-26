@@ -1,4 +1,6 @@
-# Original README from the lidarr github:
+# Lidarr
+
+## Original README from the lidarr github:
 
 https://github.com/lidarr/Lidarr
 

@@ -1,4 +1,6 @@
-# Original README from the tautulli github:
+# Tautulli
+
+## Original README from the tautulli github:
 
 https://github.com/Tautulli/Tautulli
 

@@ -1,4 +1,6 @@
-# Original README from the radarr github:
+# Radarr
+
+## Original README from the radarr github:
 
 https://github.com/Radarr/Radarr
 

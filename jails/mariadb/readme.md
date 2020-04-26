@@ -1,4 +1,6 @@
-# Original README from the mariadb github:
+# MariaDB
+
+## Original README from the mariadb github:
 
 https://github.com/MariaDB/server/
 

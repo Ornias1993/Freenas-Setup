@@ -1,4 +1,7 @@
-# Original README from the Bitwarden_rs github:
+# Bitwarden_RS
+
+
+## Original README from the Bitwarden_rs github:
 
 https://github.com/dani-garcia/bitwarden_rs
 

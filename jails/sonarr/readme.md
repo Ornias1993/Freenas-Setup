@@ -1,4 +1,6 @@
-# Original README from the sonarr github:
+# Sonarr
+
+## Original README from the sonarr github:
 
 https://github.com/Sonarr/Sonarr
 

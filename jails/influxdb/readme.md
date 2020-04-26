@@ -1,4 +1,6 @@
-# Original README from the influxdb github:
+# InfluxDB
+
+## Original README from the influxdb github:
 
 https://github.com/influxdata/influxdb
 
