@@ -28,7 +28,42 @@ example: example
   pkgs: mono
   
 plex: plex
+  ip4_addr: 192.168.1.99/24
+  gateway: 192.168.1.1
   beta: false
+
+lidarr: lidarr
+  ip4_addr: 192.168.1.99/24
+  gateway: 192.168.1.1
+  
+sonarr: sonarr
+  ip4_addr: 192.168.1.99/24
+  gateway: 192.168.1.1
+  
+radarr: radarr
+  ip4_addr: 192.168.1.99/24
+  gateway: 192.168.1.1
+  
+kms: kms
+  ip4_addr: 192.168.1.99/24
+  gateway: 192.168.1.1
+
+jackett: jackett
+  ip4_addr: 192.168.1.99/24
+  gateway: 192.168.1.1
+  
+organizr: organizr
+  ip4_addr: 192.168.1.99/24
+  gateway: 192.168.1.1
+  
+tautulli: tautulli
+  ip4_addr: 192.168.1.99/24
+  gateway: 192.168.1.1
+
+transmission: transmission
+  ip4_addr: 192.168.1.99/24
+  gateway: 192.168.1.1
+
 
 nextcloud: nextcloud
   ip4_addr: 192.168.1.99/24
