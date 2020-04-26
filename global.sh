@@ -3,7 +3,9 @@
 
 # yml Parser function
 # Based on https://gist.github.com/pkuczynski/8665367
-# shellcheck disable=SC2086
+#
+# This function is very picky and complex. Ignore with shellcheck for now.
+# shellcheck disable=SC2086,SC2155
 parse_yaml() {
    local prefix=${2}
    local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
