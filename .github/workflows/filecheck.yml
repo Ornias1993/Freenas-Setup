@@ -1,0 +1,23 @@
+name: File Presence QC
+on:
+  push:
+    branches:
+      - wiki_dev
+
+jobs:
+  build:
+    name: Check Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v1
+        with:
+          ref: 'wiki_dev'
+      - name: check existance
+        run: |
+         for pathname in jails/*; do test -e $pathname/readme.md || { echo "File missing: $pathname/readme.md"; error="true"; }; done
+         for pathname in jails/*; do test -e $pathname/install.sh || { echo "File missing: $pathname/install.sh"; error="true"; }; done
+         for pathname in jails/*; do test -e $pathname/update.sh || { echo "File missing: $pathname/update.sh"; error="true"; }; done
+         for pathname in jails/*; do test -e $pathname/config.yml || { echo "File missing: $pathname/config.yml"; error="true"; }; done
+         if [ "${error}" == "true" ]; then echo "Missing files detected" && exit 1; fi
+        shell: bash
