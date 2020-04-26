@@ -40,5 +40,5 @@ Some datasets are auto created and can not be changed from the config file. This
 
 ### Advanced
 - interfaces: Set the "interfaces" flag for iocage. Example: `vnet0:bridge0` (optional)
-- dhcp: Set to force DHCP (not required for DHCP, see above)
+- dhcp: Set to "on" to force DHCP (not required for DHCP, see above)
 - pkgs: Override the to-be-install packages for this jail (might break now or break updates)
