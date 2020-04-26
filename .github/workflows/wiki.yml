@@ -2,7 +2,7 @@ name: Publish docs via GitHub Pages
 on:
   push:
     branches:
-      - wiki_dev
+      - master
 
 jobs:
   build:
@@ -12,7 +12,7 @@ jobs:
       - name: Checkout master
         uses: actions/checkout@v1
         with:
-          ref: 'wiki_dev'
+          ref: 'master'
       - name: rename-readme
         run: |
           for pathname in jails/*/README.MD; do ! cp "$pathname" "docs/jails/$( basename "$( dirname "$pathname" )" ).md"; done
