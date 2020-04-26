@@ -1,0 +1,3 @@
+blueprint:
+  organizr:
+    pkgs: nginx php72 php72-filter php72-curl php72-hash php72-json php72-openssl php72-pdo php72-pdo_sqlite php72-session php72-simplexml php72-sqlite3 php72-zip git

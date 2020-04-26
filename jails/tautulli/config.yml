@@ -1,2 +1,0 @@
-tautulli: tautulli
-  pkgs: python2 py27-sqlite3 py27-openssl git

@@ -44,6 +44,7 @@ fi
 jailcreate() {
 echo "Checking config..."
 blueprintpkgs="blueprint_${2}_pkgs"
+blueprintports="blueprint_${2}_ports"
 jailinterfaces="jail_${1}_interfaces"
 jailip4="jail_${1}_ip4_addr"
 jailgateway="jail_${1}_gateway"
@@ -89,12 +90,16 @@ createmount "${1}" "${global_dataset_config}"
 createmount "${1}" "${global_dataset_config}"/"${1}" /config
 
 # Create and Mount portsnap
-echo "Mounting and fetching ports"
 createmount "${1}" "${global_dataset_config}"/portsnap
 createmount "${1}" "${global_dataset_config}"/portsnap/db /var/db/portsnap
 createmount "${1}" "${global_dataset_config}"/portsnap/ports /usr/ports
-
-iocage exec "${1}" "if [ -z /usr/ports ]; then portsnap fetch extract; else portsnap auto; fi"
+if [ "${!blueprintports}" == "true" ]
+then
+	echo "Mounting and fetching ports"
+	iocage exec "${1}" "if [ -z /usr/ports ]; then portsnap fetch extract; else portsnap auto; fi"
+else
+	echo "Ports not enabled for blueprint, skipping"
+fi
 
 echo "Jail creation completed for ${1}"
 

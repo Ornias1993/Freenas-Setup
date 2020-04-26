@@ -107,7 +107,7 @@ export global_dataset_iocage
 
 # Parse the Config YAML
 # shellcheck disable=SC2046
-for configpath in "${SCRIPT_DIR}"/jails/*/config.yml; do ! eval $(parse_yaml "${configpath}"); done
+for configpath in "${SCRIPT_DIR}"/blueprints/*/config.yml; do ! eval $(parse_yaml "${configpath}"); done
 eval "$(parse_yaml config.yml)"
 
 # Check and Execute requested jail destructions
@@ -137,12 +137,12 @@ else
 		then
 			echo "Config for ${jail} in config.yml incorrect. Please check your config."
 			exit 1
-		elif [ -f "${SCRIPT_DIR}/jails/${!blueprint}/install.sh" ]
+		elif [ -f "${SCRIPT_DIR}/blueprints/${!blueprint}/install.sh" ]
 		then
 			echo "Installing $jail"
-			jailcreate "${jail}" "${!blueprint}" && "${SCRIPT_DIR}"/jails/"${!blueprint}"/install.sh "${jail}"
+			jailcreate "${jail}" "${!blueprint}" && "${SCRIPT_DIR}"/blueprints/"${!blueprint}"/install.sh "${jail}"
 		else
-			echo "Missing blueprint ${!blueprint} for $jail in ${SCRIPT_DIR}/jails/${!blueprint}/install.sh"
+			echo "Missing blueprint ${!blueprint} for $jail in ${SCRIPT_DIR}/blueprints/${!blueprint}/install.sh"
 			exit 1
 		fi
 	done
@@ -161,12 +161,12 @@ else
 		then
 			echo "Config for ${jail} in config.yml incorrect. Please check your config."
 			exit 1
-		elif [ -f "${SCRIPT_DIR}/jails/${!blueprint}/install.sh" ]
+		elif [ -f "${SCRIPT_DIR}/blueprints/${!blueprint}/install.sh" ]
 		then
 			echo "Reinstalling $jail"
-			iocage destroy -f "${jail}" && jailcreate "${jail}" "${!blueprint}" && "${SCRIPT_DIR}"/jails/"${!blueprint}"/install.sh "${jail}"
+			iocage destroy -f "${jail}" && jailcreate "${jail}" "${!blueprint}" && "${SCRIPT_DIR}"/blueprints/"${!blueprint}"/install.sh "${jail}"
 		else
-			echo "Missing blueprint ${!blueprint} for $jail in ${SCRIPT_DIR}/jails/${!blueprint}/install.sh"
+			echo "Missing blueprint ${!blueprint} for $jail in ${SCRIPT_DIR}/blueprints/${!blueprint}/install.sh"
 			exit 1
 		fi
 	done
@@ -186,7 +186,7 @@ else
 		then
 			echo "Config for ${jail} in config.yml incorrect. Please check your config."
 			exit 1
-		elif [ -f "${SCRIPT_DIR}/jails/${!blueprint}/update.sh" ]
+		elif [ -f "${SCRIPT_DIR}/blueprints/${!blueprint}/update.sh" ]
 		then
 			echo "Updating $jail"
 			iocage update "${jail}"
@@ -194,7 +194,7 @@ else
 			iocage restart "${jail}"
 			iocage start "${jail}"
 		else
-			echo "Missing blueprint ${!blueprint} for $jail in ${SCRIPT_DIR}/jails/${!blueprint}/install.sh"
+			echo "Missing blueprint ${!blueprint} for $jail in ${SCRIPT_DIR}/blueprints/${!blueprint}/install.sh"
 			exit 1
 		fi
 	done
@@ -213,7 +213,7 @@ else
 			then
 			echo "Config for ${jail} in config.yml incorrect. Please check your config."
 			exit 1
-		elif [ -f "${SCRIPT_DIR}/jails/${!blueprint}/update.sh" ]
+		elif [ -f "${SCRIPT_DIR}/blueprints/${!blueprint}/update.sh" ]
 		then
 			echo "Currently Upgrading is not yet included in this script."
 		else

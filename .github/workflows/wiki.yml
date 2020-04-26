@@ -15,10 +15,7 @@ jobs:
           ref: 'master'
       - name: rename-readme
         run: |
-          for pathname in jails/*/README.MD; do ! cp "$pathname" "docs/jails/$( basename "$( dirname "$pathname" )" ).md"; done
-          for pathname in jails/*/README.md; do ! cp "$pathname" "docs/jails/$( basename "$( dirname "$pathname" )" ).md"; done 
-          for pathname in jails/*/readme.md; do ! cp "$pathname" "docs/jails/$( basename "$( dirname "$pathname" )" ).md"; done
-          for pathname in jails/*/Readme.md; do ! cp "$pathname" "docs/jails/$( basename "$( dirname "$pathname" )" ).md"; done
+          for pathname in blueprints/*/readme.md; do ! cp "$pathname" "docs/blueprints/$( basename "$( dirname "$pathname" )" ).md"; done
         shell: bash
       - name: Deploy docs
         uses: mhausenblas/mkdocs-deploy-gh-pages@master
