@@ -1,4 +1,7 @@
 global:
+  config:
+  # Config file syntax version (not same as script version)
+    version: 2.0
   # Relevant dataset paths, please use the ZFS dataset syntax such as: tank/apps
   dataset:
    # dataset for internal jail config files
@@ -15,92 +18,94 @@ global:
    # Please use standard space delimited pkg install syntax.
    pkgs: curl ca_root_nss bash
 
-
-# Example configuration, showing how to customise network config. 
-# Use the same jailname on both sides of this variable example: example
-example: example
-  #interfaces is optional and will be autmatically replace with vnet0:bridge0 if not present
-  interfaces: vnet0:bridge0
-  ip4_addr: 192.168.1.99/24
-  gateway: 192.168.1.1
-  # Jail specific pkgs. 
-  # Please use standard space delimited pkg install syntax.
-  pkgs: mono
+jail:
+  plex: 
+    blueprint: plex
+    ip4_addr: 192.168.1.99/24
+    gateway: 192.168.1.1
+    beta: false
   
-plex: plex
-  ip4_addr: 192.168.1.99/24
-  gateway: 192.168.1.1
-  beta: false
-
-lidarr: lidarr
-  ip4_addr: 192.168.1.99/24
-  gateway: 192.168.1.1
+  lidarr: 
+    blueprint: lidarr
+    ip4_addr: 192.168.1.99/24
+    gateway: 192.168.1.1
+    
+  sonarr: 
+    blueprint: sonarr
+    ip4_addr: 192.168.1.99/24
+    gateway: 192.168.1.1
+    
+  radarr: 
+    blueprint: radarr
+    ip4_addr: 192.168.1.99/24
+    gateway: 192.168.1.1
+    
+  kms: 
+    blueprint: kms
+    ip4_addr: 192.168.1.99/24
+    gateway: 192.168.1.1
   
-sonarr: sonarr
-  ip4_addr: 192.168.1.99/24
-  gateway: 192.168.1.1
+  jackett: 
+    blueprint: jackett
+    ip4_addr: 192.168.1.99/24
+    gateway: 192.168.1.1
+    
+  organizr: 
+    blueprint: organizr
+    ip4_addr: 192.168.1.99/24
+    gateway: 192.168.1.1
+    
+  tautulli: 
+    blueprint: tautulli
+    ip4_addr: 192.168.1.99/24
+    gateway: 192.168.1.1
   
-radarr: radarr
-  ip4_addr: 192.168.1.99/24
-  gateway: 192.168.1.1
+  transmission: 
+    blueprint: transmission
+    ip4_addr: 192.168.1.99/24
+    gateway: 192.168.1.1
   
-kms: kms
-  ip4_addr: 192.168.1.99/24
-  gateway: 192.168.1.1
-
-jackett: jackett
-  ip4_addr: 192.168.1.99/24
-  gateway: 192.168.1.1
   
-organizr: organizr
-  ip4_addr: 192.168.1.99/24
-  gateway: 192.168.1.1
+  nextcloud: 
+    blueprint: nextcloud
+    ip4_addr: 192.168.1.99/24
+    gateway: 192.168.1.1
+    time_zone: Europe/Amsterdam
+    host_name: cloud.example.com
+    database: mariadb
+    standalone_cert: 0
+    selfsigned_cert: 0
+    dns_cert: 0
+    no_cert: 1
+    dl_flags: ""
+    dns_settings: ""
+    cert_email: "placeholder@holdplace.org"
+    database: mariadb
+  #  db_database:
+  #  db_user:
+  #  db_password
+  #  db_host
+    
+  mariadb: 
+    blueprint: mariadb
+    ip4_addr: 192.168.1.98/24
+    gateway: 192.168.1.1
+    db_root_password: ReplaceThisWithYourOwnRootPAssword
+    host_name: mariadb.local.example
   
-tautulli: tautulli
-  ip4_addr: 192.168.1.99/24
-  gateway: 192.168.1.1
+  bitwarden: bitwarden
+    blueprint: 
+    ip4_addr: 192.168.1.97/24
+    gateway: 192.168.1.1
+    db_password: "YourDBPasswordHerePLEASE"
+    type: mariadb
+    admin_token: "PUTYOURADMINTOKENHEREANDREMOVETHIS"
 
-transmission: transmission
-  ip4_addr: 192.168.1.99/24
-  gateway: 192.168.1.1
-
-
-nextcloud: nextcloud
-  ip4_addr: 192.168.1.99/24
-  gateway: 192.168.1.1
-  time_zone: Europe/Amsterdam
-  host_name: cloud.example.com
-  database: mariadb
-  standalone_cert: 0
-  selfsigned_cert: 0
-  dns_cert: 0
-  no_cert: 1
-  dl_flags: ""
-  dns_settings: ""
-  cert_email: "placeholder@holdplace.org"
-  database: mariadb
-#  db_database:
-#  db_user:
-#  db_password
-#  db_host
-  
-mariadb: mariadb
-  ip4_addr: 192.168.1.98/24
-  gateway: 192.168.1.1
-  db_root_password: ReplaceThisWithYourOwnRootPAssword
-  host_name: mariadb.local.example
-
-bitwarden: bitwarden
-  ip4_addr: 192.168.1.97/24
-  gateway: 192.168.1.1
-  db_password: "YourDBPasswordHerePLEASE"
-  type: mariadb
-  admin_token: "PUTYOURADMINTOKENHEREANDREMOVETHIS"
-
-influxdb: influxdb
-  ip4_addr: 192.168.1.250/24
-  gateway: 192.168.1.1
-  database: influxdb
+  influxdb: 
+    blueprint: influxdb
+    ip4_addr: 192.168.1.250/24
+    gateway: 192.168.1.1
+    database: influxdb
 
 unifi: unifi
   ip4_addr: 192.168.1.251/24

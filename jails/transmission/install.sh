@@ -3,17 +3,17 @@
 
 # Check if dataset Downloads dataset exist, create if they do not.
 # shellcheck disable=SC2154
-createmount transmission "${global_dataset_downloads}" /mnt/downloads
+createmount "$1" "${global_dataset_downloads}" /mnt/downloads
 
 # Check if dataset Complete Downloads dataset exist, create if they do not.
-createmount transmission "${global_dataset_downloads}"/complete /mnt/downloads/complete
+createmount "$1" "${global_dataset_downloads}"/complete /mnt/downloads/complete
 
 # Check if dataset InComplete Downloads dataset exist, create if they do not.
-createmount transmission "${global_dataset_downloads}"/incomplete /mnt/downloads/incomplete
+createmount "$1" "${global_dataset_downloads}"/incomplete /mnt/downloads/incomplete
 
 
-iocage exec transmission chown -R transmission:transmission /config
-iocage exec transmission sysrc "transmission_enable=YES"
-iocage exec transmission sysrc "transmission_conf_dir=/config"
-iocage exec transmission sysrc "transmission_download_dir=/mnt/downloads/complete"
-iocage exec transmission service transmission restart
+iocage exec "$1" chown -R transmission:transmission /config
+iocage exec "$1" sysrc "transmission_enable=YES"
+iocage exec "$1" sysrc "transmission_conf_dir=/config"
+iocage exec "$1" sysrc "transmission_download_dir=/mnt/downloads/complete"
+iocage exec "$1" service transmission restart

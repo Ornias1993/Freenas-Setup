@@ -43,12 +43,11 @@ fi
 
 jailcreate() {
 echo "Checking config..."
-jailname="${1}"
-jailpkgs="${1}_pkgs"
-jailinterfaces="${1}_interfaces"
-jailip4="${1}_ip4_addr"
-jailgateway="${1}_gateway"
-jaildhcp="${1}_dhcp"
+blueprintpkgs="blueprint_${2}_pkgs"
+jailinterfaces="jail_${1}_interfaces"
+jailip4="jail_${1}_ip4_addr"
+jailgateway="jail_${1}_gateway"
+jaildhcp="jail_${1}_dhcp"
 setdhcp=${!jaildhcp}
 
 if [ -z "${!jailinterfaces}" ]; then 
@@ -62,49 +61,43 @@ if [ -z "${setdhcp}" ] && [ -z "${!jailip4}" ] && [ -z "${!jailgateway}" ]; then
 	setdhcp="on"
 fi
 
-if [ -z "${!jailname}" ]; then 
-	echo "ERROR, jail not defined in config.yml"
-	exit 1
-else
-	echo "Creating jail for $1"
+echo "Creating jail for $1"
+# shellcheck disable=SC2154
+pkgs="$(sed 's/[^[:space:]]\{1,\}/"&"/g;s/ /,/g' <<<"${global_jails_pkgs} ${!blueprintpkgs}")"
+echo '{"pkgs":['"${pkgs}"']}' > /tmp/pkg.json
+if [ "${setdhcp}" == "on" ]
+then
 	# shellcheck disable=SC2154
-	pkgs="$(sed 's/[^[:space:]]\{1,\}/"&"/g;s/ /,/g' <<<"${global_jails_pkgs} ${!jailpkgs}")"
-	echo '{"pkgs":['"${pkgs}"']}' > /tmp/pkg.json
-	if [ "${setdhcp}" == "on" ]
+	if ! iocage create -n "${1}" -p /tmp/pkg.json -r "${global_jails_version}" interfaces="${jailinterfaces}" dhcp="on" vnet="on" allow_raw_sockets="1" boot="on" -b
 	then
-		# shellcheck disable=SC2154
-		if ! iocage create -n "${1}" -p /tmp/pkg.json -r "${global_jails_version}" interfaces="${jailinterfaces}" dhcp="on" vnet="on" allow_raw_sockets="1" boot="on" -b
-		then
-			echo "Failed to create jail"
-			exit 1
-		fi
-	else
-		# shellcheck disable=SC2154
-		if ! iocage create -n "${1}" -p /tmp/pkg.json -r "${global_jails_version}" interfaces="${jailinterfaces}" ip4_addr="vnet0|${!jailip4}" defaultrouter="${!jailgateway}" vnet="on" allow_raw_sockets="1" boot="on" -b
-		then
-			echo "Failed to create jail"
-			exit 1
-		fi
-		
+		echo "Failed to create jail"
+		exit 1
 	fi
-
-	rm /tmp/pkg.json
-	echo "creating jail config directory"
+else
 	# shellcheck disable=SC2154
-	createmount "${1}" "${global_dataset_config}"
-	createmount "${1}" "${global_dataset_config}"/"${1}" /config
-	
-	# Create and Mount portsnap
-	echo "Mounting and fetching ports"
-	createmount "${1}" "${global_dataset_config}"/portsnap
-	createmount "${1}" "${global_dataset_config}"/portsnap/db /var/db/portsnap
-	createmount "${1}" "${global_dataset_config}"/portsnap/ports /usr/ports
-	
-	iocage exec "${1}" "if [ -z /usr/ports ]; then portsnap fetch extract; else portsnap auto; fi"
-	
-	echo "Jail creation completed for ${1}"
-fi	
-	
+	if ! iocage create -n "${1}" -p /tmp/pkg.json -r "${global_jails_version}" interfaces="${jailinterfaces}" ip4_addr="vnet0|${!jailip4}" defaultrouter="${!jailgateway}" vnet="on" allow_raw_sockets="1" boot="on" -b
+	then
+		echo "Failed to create jail"
+		exit 1
+	fi
+fi
+
+rm /tmp/pkg.json
+echo "creating jail config directory"
+# shellcheck disable=SC2154
+createmount "${1}" "${global_dataset_config}"
+createmount "${1}" "${global_dataset_config}"/"${1}" /config
+
+# Create and Mount portsnap
+echo "Mounting and fetching ports"
+createmount "${1}" "${global_dataset_config}"/portsnap
+createmount "${1}" "${global_dataset_config}"/portsnap/db /var/db/portsnap
+createmount "${1}" "${global_dataset_config}"/portsnap/ports /usr/ports
+
+iocage exec "${1}" "if [ -z /usr/ports ]; then portsnap fetch extract; else portsnap auto; fi"
+
+echo "Jail creation completed for ${1}"
+
 }
 
 # $1 = jail name
