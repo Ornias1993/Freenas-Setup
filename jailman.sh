@@ -100,8 +100,10 @@ while getopts ":i:r:u:d:g:h" opt
      esac
 done
 
+# auto detect iocage install location
 global_dataset_iocage=$(zfs get -H -o value mountpoint $(iocage get -p)/iocage)
 global_dataset_iocage=${global_dataset_iocage#/mnt/}
+export global_dataset_iocage
 
 # Parse the Config YAML
 # shellcheck disable=SC2046
