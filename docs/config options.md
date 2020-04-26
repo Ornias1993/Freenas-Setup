@@ -35,8 +35,12 @@ Some datasets are auto created and can not be changed from the config file. This
 ## General config options
 
 ### Networking
+
+Please be aware that dhcp is not actively supported, many of the jails depend on having a fixed IP-adress in the config file.
+Some also depend on other jails having a fixed IP in the config file. Use of DHCP is on your own risk and might not work.
+
 - ip4_addr: To set a static IP (recommended), enter the desired ip address here. Leave blank (or remove the line) for DHCP.
-- gateway: Set the gateway IP for static IP setup. Leave blank (or remove the line) for DHCP.
+- gateway: Set the gateway IP for static IP setup. Leave blank (or remove the line) for DHCP. 
 
 ### Advanced
 - interfaces: Set the "interfaces" flag for iocage. Example: `vnet0:bridge0` (optional)
