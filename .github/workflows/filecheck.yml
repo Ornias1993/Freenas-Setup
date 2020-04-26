@@ -1,18 +1,16 @@
 name: File Presence QC
 on:
-  push:
+  pull_request:
     branches:
-      - wiki_dev
+      - master
+      - dev
 
 jobs:
   build:
     name: Check Files
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout master
-        uses: actions/checkout@v1
-        with:
-          ref: 'wiki_dev'
+      - uses: actions/checkout@v1
       - name: check existance
         run: |
          for pathname in jails/*; do test -e $pathname/readme.md || { echo "File missing: $pathname/readme.md"; error="true"; }; done
