@@ -49,7 +49,7 @@ mongod_create_dbpath()
 
 mongod_prestart()
 {
-        if [ ! -d ${mongod_dbpath} ]; then
+        if [ ! -d "${mongod_dbpath}" ]; then
                 mongod_create_dbpath || return 1
         fi
         if checkyesno mongod_limits; then
