@@ -3,7 +3,7 @@
 
 # Initialize variables
 JAIL_NAME="unifi"
-# Shellcheck disable=SC2154
+# shellcheck disable=SC2154
 JAIL_IP="${unifi_ip4_addr%/*}"
 # Shellcheck disable=SC2154
 DB_IP="${influxdb_ip4_addr%/*}"
