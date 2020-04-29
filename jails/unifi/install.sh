@@ -53,12 +53,11 @@ else
   DOWNLOAD=$(curl -s https://api.github.com/repos/unifi-poller/unifi-poller/releases/latest | jq -r ".assets[] | select(.name | contains(\"amd64.txz\")) | .browser_download_url")
   iocage exec "${JAIL_NAME}" fetch -o /config "${DOWNLOAD}"
 
-  # Install downloaded package and enable 
+  # Install downloaded Unifi-Poller package, configure and enable 
   iocage exec "${JAIL_NAME}" pkg install -qy /config/"${FILE_NAME}"
-  iocage exec "${JAIL_NAME}" mv /usr/local/etc/rc.d/unifi-poller /usr/local/etc/rc.d/unifi_poller
   cp "${INCLUDES_PATH}"/up.conf /mnt/"${global_dataset_config}"/"${JAIL_NAME}"
   cp "${INCLUDES_PATH}"/up.conf.example /mnt/"${global_dataset_config}"/"${JAIL_NAME}"
-  cp "${INCLUDES_PATH}"/unifi_poller /mnt/"${global_dataset_iocage}"/jails/"${JAIL_NAME}"/root/usr/local/etc/rc.d/unifi_poller
+  cp "${INCLUDES_PATH}"/rc/unifi_poller /mnt/"${global_dataset_iocage}"/jails/"${JAIL_NAME}"/root/usr/local/etc/rc.d/unifi_poller
   iocage exec "${JAIL_NAME}" sed -i '' "s|influxdbuser|${DB_USER}|" /config/up.conf
   iocage exec "${JAIL_NAME}" sed -i '' "s|influxdbpass|${DB_PASS}|" /config/up.conf
   iocage exec "${JAIL_NAME}" sed -i '' "s|unifidb|${DB_NAME}|" /config/up.conf
