@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC1091,SC2034,SC2223,SC2154
 
 # PROVIDE: mongod
 # REQUIRE: NETWORK ldconfig
@@ -42,8 +43,8 @@ start_precmd="${name}_prestart"
 
 mongod_create_dbpath()
 {
-        mkdir ${mongod_dbpath} >/dev/null 2>/dev/null
-        [ $? -eq 0 ] && chown -R ${mongod_user}:${mongod_group} ${mongod_dbpath}
+        mkdir "${mongod_dbpath}" >/dev/null 2>/dev/null
+        [ $? -eq 0 ] && chown -R "${mongod_user}":"${mongod_group}" "${mongod_dbpath}"
 }
 
 mongod_prestart()
@@ -52,6 +53,8 @@ mongod_prestart()
                 mongod_create_dbpath || return 1
         fi
         if checkyesno mongod_limits; then
+                # TODO check this and clean this up
+                # Shellcheck disable=SC2046,SC2006
                 eval `/usr/bin/limits -e -U ${mongod_user}` 2>/dev/null
         else
                 return 0

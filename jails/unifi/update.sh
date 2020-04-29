@@ -7,6 +7,7 @@ FILE_NAME=$(curl -s https://api.github.com/repos/unifi-poller/unifi-poller/relea
 DOWNLOAD=$(curl -s https://api.github.com/repos/unifi-poller/unifi-poller/releases/latest | jq -r ".assets[] | select(.name | contains(\"amd64.txz\")) | .browser_download_url")
 
 # Check to see if there is an update.
+# Shellcheck disable=SC2154
 if [[ -f /mnt/"${global_dataset_config}"/"${JAIL_NAME}"/"${FILE_NAME}" ]]; then
   echo "Unifi-Poller is up to date."
   exit 1

@@ -3,13 +3,21 @@
 
 # Initialize variables
 JAIL_NAME="unifi"
-JAIL_IP="$(sed 's|\(.*\)/.*|\1|' <<<"${unifi_ip4_addr}" )"
-DB_IP="$(sed 's|\(.*\)/.*|\1|' <<<"${influxdb_ip4_addr}" )"
+# Shellcheck disable=SC2154
+JAIL_IP="${unifi_ip4_addr%/*}"
+# Shellcheck disable=SC2154
+DB_IP="${influxdb_ip4_addr%/*}"
+# Shellcheck disable=SC2154
 DB_JAIL="${unifi_db_jail}"
+# Shellcheck disable=SC2154
 DB_NAME="${unifi_up_db_name:-unifi}"
+# Shellcheck disable=SC2154
 DB_USER="${unifi_up_db_user}"
+# Shellcheck disable=SC2154
 DB_PASS="${unifi_up_db_password}"
+# Shellcheck disable=SC2154
 UP_USER="${unifi_up_user}"
+# Shellcheck disable=SC2154
 UP_PASS="${unifi_up_password}"
 INCLUDES_PATH="${SCRIPT_DIR}/jails/unifi/includes"
 
@@ -17,12 +25,16 @@ INCLUDES_PATH="${SCRIPT_DIR}/jails/unifi/includes"
 iocage exec "${JAIL_NAME}" mkdir -p /config/controller/mongodb
 iocage exec "${JAIL_NAME}" cp -Rp /usr/local/share/java/unifi /config/controller
 iocage exec "${JAIL_NAME}" chown -R mongodb:mongodb /config/controller/mongodb
+# Shellcheck disable=SC2154
 cp "${INCLUDES_PATH}"/mongodb.conf /mnt/"${global_dataset_iocage}"/jails/"${JAIL_NAME}"/root/usr/local/etc
+# Shellcheck disable=SC2154
 cp "${INCLUDES_PATH}"/rc/mongod /mnt/"${global_dataset_iocage}"/jails/"${JAIL_NAME}"/root/usr/local/etc/rc.d/
+# Shellcheck disable=SC2154
 cp "${INCLUDES_PATH}"/rc/unifi /mnt/"${global_dataset_iocage}"/jails/"${JAIL_NAME}"/root/usr/local/etc/rc.d/
 iocage exec "${JAIL_NAME}" sysrc unifi_enable=YES
 iocage exec "${JAIL_NAME}" service unifi start
 
+# Shellcheck disable=SC2154
 if [[ ! "${unifi_unifi_poller}" ]]; then
   echo "Installation complete!"
   echo "Unifi Controller is accessible at https://${JAIL_IP}:8443."
