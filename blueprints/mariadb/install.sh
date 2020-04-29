@@ -7,19 +7,20 @@
 #####
 
 # Initialise defaults
-JAIL_NAME="$1"
 # shellcheck disable=SC2154
-JAIL_IP="${mariadb_ip4_addr%/*}"
+JAIL_IP="jail_${1}_ip4_addr"
+JAIL_IP="${!JAIL_IP%/*}"
 INCLUDES_PATH="${SCRIPT_DIR}/blueprints/mariadb/includes"
 # shellcheck disable=SC2154
-CERT_EMAIL=${mariadb_cert_email}
+CERT_EMAIL="${CERT_EMAIL:-placeholder@email.fake}"
 # shellcheck disable=SC2154
-DB_ROOT_PASSWORD=${mariadb_db_root_password}
-DB_NAME="MariaDB"
+DB_ROOT_PASSWORD="jail_${1}_db_root_password"
+HOST_NAME="jail_${1}_host_name"
 DL_FLAGS=""
+DNS_ENV=""
 
 # Check that necessary variables were set by nextcloud-config
-if [ -z "${mariadb_ip4_addr}" ]; then
+if [ -z "${JAIL_IP}" ]; then
   echo 'Configuration error: The mariadb jail does NOT accept DHCP'
   echo 'Please reinstall using a fixed IP adress'
   exit 1
@@ -27,24 +28,24 @@ fi
 
 # Make sure DB_PATH is empty -- if not, MariaDB/PostgreSQL will choke
 # shellcheck disable=SC2154
-if [ "$(ls -A "/mnt/${global_dataset_config}/${JAIL_NAME}/db")" ]; then
+if [ "$(ls -A "/mnt/${global_dataset_config}/${1}/db")" ]; then
 	echo "Reinstall of mariadb detected... Continuing"
 	REINSTALL="true"
 fi
 
 # Mount database dataset and set zfs preferences
-createmount ${JAIL_NAME} "${global_dataset_config}"/${JAIL_NAME}/db /var/db/mysql
-zfs set recordsize=16K "${global_dataset_config}"/${JAIL_NAME}/db
-zfs set primarycache=metadata "${global_dataset_config}"/${JAIL_NAME}/db
+createmount "${1}" "${global_dataset_config}"/"${1}"/db /var/db/mysql
+zfs set recordsize=16K "${global_dataset_config}"/"${1}"/db
+zfs set primarycache=metadata "${global_dataset_config}"/"${1}"/db
 
-iocage exec "${JAIL_NAME}" chown -R 88:88 /var/db/mysql
+iocage exec "${1}" chown -R 88:88 /var/db/mysql
 
 # Install includes fstab
-iocage exec "${JAIL_NAME}" mkdir -p /mnt/includes
-iocage fstab -a "${JAIL_NAME}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
+iocage exec "${1}" mkdir -p /mnt/includes
+iocage fstab -a "${1}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
 
-iocage exec "${JAIL_NAME}" mkdir -p /usr/local/www/phpmyadmin
-iocage exec "${JAIL_NAME}" chown -R www:www /usr/local/www/phpmyadmin
+iocage exec "${1}" mkdir -p /usr/local/www/phpmyadmin
+iocage exec "${1}" chown -R www:www /usr/local/www/phpmyadmin
 
 #####
 # 
@@ -53,28 +54,28 @@ iocage exec "${JAIL_NAME}" chown -R www:www /usr/local/www/phpmyadmin
 #####
 
 fetch -o /tmp https://getcaddy.com
-if ! iocage exec "${JAIL_NAME}" bash -s personal "${DL_FLAGS}" < /tmp/getcaddy.com
+if ! iocage exec "${1}" bash -s personal "${DL_FLAGS}" < /tmp/getcaddy.com
 then
 	echo "Failed to download/install Caddy"
 	exit 1
 fi
 
-iocage exec "${JAIL_NAME}" sysrc mysql_enable="YES"
+iocage exec "${1}" sysrc mysql_enable="YES"
 
 # Copy and edit pre-written config files
 echo "Copying Caddyfile for no SSL"
-iocage exec "${JAIL_NAME}" cp -f /mnt/includes/caddy /usr/local/etc/rc.d/
-iocage exec "${JAIL_NAME}" cp -f /mnt/includes/Caddyfile /usr/local/www/Caddyfile
+iocage exec "${1}" cp -f /mnt/includes/caddy.rc /usr/local/etc/rc.d/caddy
+iocage exec "${1}" cp -f /mnt/includes/Caddyfile /usr/local/www/Caddyfile
 # shellcheck disable=SC2154
-iocage exec "${JAIL_NAME}" sed -i '' "s/yourhostnamehere/${mariadb_host_name}/" /usr/local/www/Caddyfile
-iocage exec "${JAIL_NAME}" sed -i '' "s/JAIL-IP/${JAIL_IP}/" /usr/local/www/Caddyfile
+iocage exec "${1}" sed -i '' "s/yourhostnamehere/${!HOST_NAME}/" /usr/local/www/Caddyfile
+iocage exec "${1}" sed -i '' "s/JAIL-IP/${JAIL_IP}/" /usr/local/www/Caddyfile
 
-iocage exec "${JAIL_NAME}" sysrc caddy_enable="YES"
-iocage exec "${JAIL_NAME}" sysrc php_fpm_enable="YES"
-iocage exec "${JAIL_NAME}" sysrc caddy_cert_email="${CERT_EMAIL}"
-iocage exec "${JAIL_NAME}" sysrc caddy_env="${DNS_ENV}"
+iocage exec "${1}" sysrc caddy_enable="YES"
+iocage exec "${1}" sysrc php_fpm_enable="YES"
+iocage exec "${1}" sysrc caddy_cert_email="${CERT_EMAIL}"
+iocage exec "${1}" sysrc caddy_env="${DNS_ENV}"
 
-iocage restart "${JAIL_NAME}"
+iocage restart "${1}"
 sleep 10
 
 if [ "${REINSTALL}" == "true" ]; then
@@ -82,34 +83,34 @@ if [ "${REINSTALL}" == "true" ]; then
 else
 	
 	# Secure database, set root password, create Nextcloud DB, user, and password
-	iocage exec "${JAIL_NAME}" cp -f /mnt/includes/my-system.cnf /var/db/mysql/my.cnf
-	iocage exec "${JAIL_NAME}" mysql -u root -e "DELETE FROM mysql.user WHERE User='';"
-	iocage exec "${JAIL_NAME}" mysql -u root -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
-	iocage exec "${JAIL_NAME}" mysql -u root -e "DROP DATABASE IF EXISTS test;"
-	iocage exec "${JAIL_NAME}" mysql -u root -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';"
-	iocage exec "${JAIL_NAME}" mysql -u root -e "UPDATE mysql.user SET Password=PASSWORD('${DB_ROOT_PASSWORD}') WHERE User='root';"
-	iocage exec "${JAIL_NAME}" mysqladmin reload
+	iocage exec "${1}" cp -f /mnt/includes/my-system.cnf /var/db/mysql/my.cnf
+	iocage exec "${1}" mysql -u root -e "DELETE FROM mysql.user WHERE User='';"
+	iocage exec "${1}" mysql -u root -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
+	iocage exec "${1}" mysql -u root -e "DROP DATABASE IF EXISTS test;"
+	iocage exec "${1}" mysql -u root -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';"
+	iocage exec "${1}" mysqladmin --user=root password "${!DB_ROOT_PASSWORD}"
+	iocage exec "${1}" mysqladmin reload
 fi
-iocage exec "${JAIL_NAME}" cp -f /mnt/includes/my.cnf /root/.my.cnf
-iocage exec "${JAIL_NAME}" sed -i '' "s|mypassword|${DB_ROOT_PASSWORD}|" /root/.my.cnf
+iocage exec "${1}" cp -f /mnt/includes/my.cnf /root/.my.cnf
+iocage exec "${1}" sed -i '' "s|mypassword|${!DB_ROOT_PASSWORD}|" /root/.my.cnf
 
 # Save passwords for later reference
-iocage exec "${JAIL_NAME}" echo "${DB_NAME} root password is ${DB_ROOT_PASSWORD}" > /root/${JAIL_NAME}_db_password.txt
+iocage exec "${1}" echo "MariaDB root password is ${!DB_ROOT_PASSWORD}" > /root/"${1}"_db_password.txt
 	
 
 # Don't need /mnt/includes any more, so unmount it
-iocage fstab -r "${JAIL_NAME}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
+iocage fstab -r "${1}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
 
 # Done!
 echo "Installation complete!"
-echo "Using your web browser, go to http://${mariadb_host_name} to log in"
+echo "Using your web browser, go to http://${!HOST_NAME} to log in"
 
 if [ "${REINSTALL}" == "true" ]; then
 	echo "You did a reinstall, please use your old database and account credentials"
 else
 	echo "Database Information"
 	echo "--------------------"
-	echo "The ${DB_NAME} root password is ${DB_ROOT_PASSWORD}"
+	echo "The MariaDB root password is ${!DB_ROOT_PASSWORD}"
 	fi
 echo ""
-echo "All passwords are saved in /root/${JAIL_NAME}_db_password.txt"
+echo "All passwords are saved in /root/${1}_db_password.txt"

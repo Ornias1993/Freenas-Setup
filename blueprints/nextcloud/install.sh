@@ -4,7 +4,9 @@
 
 
 # Initialise defaults
-JAIL_NAME="$1"
+JAIL_IP="jail_${1}_ip4_addr"
+JAIL_IP="${!JAIL_IP%/*}"
+HOST_NAME="jail_${1}_host_name"
 # shellcheck disable=SC2154
 JAIL_IP="${nextcloud_ip4_addr%/*}"
 # shellcheck disable=SC2154
@@ -53,7 +55,7 @@ elif [ "${DATABASE}" = "mariadb-jail" ]; then
   DB_HOST="${mariadb_ip4_addr%/*}:3306"
   DB_PASSWORD="${nextcloud_db_password}"
 else
-  echo "Invalid ${JAIL_NAME}_database selected please select one from the following options:"
+  echo "Invalid ${1}_database selected please select one from the following options:"
   echo "mariadb-jail, mariadb-external, pgsql-external"
   exit 1
 fi
@@ -138,7 +140,7 @@ fi
 
 # Make sure DB_PATH is empty -- if not, MariaDB/PostgreSQL will choke
 # shellcheck disable=SC2154
-if [ "$(ls -A "/mnt/${global_dataset_config}/${JAIL_NAME}/config")" ]; then
+if [ "$(ls -A "/mnt/${global_dataset_config}/${1}/config")" ]; then
 	echo "Reinstall of Nextcloud detected... "
 	echo "External database selected, unable to verify compatibility. REINSTALL MIGHT NOT WORK... Continuing"
 	REINSTALL="true"
@@ -152,17 +154,17 @@ fi
 #####
 
 # Create and Mount Nextcloud, Config and Files
-createmount ${JAIL_NAME} "${global_dataset_config}"/${JAIL_NAME}/config /usr/local/www/nextcloud/config
-createmount ${JAIL_NAME} "${global_dataset_config}"/${JAIL_NAME}/themes /usr/local/www/nextcloud/themes
-createmount ${JAIL_NAME} "${global_dataset_config}"/${JAIL_NAME}/files /config/files
+createmount"${1}""${global_dataset_config}"/"${1}"/config /usr/local/www/nextcloud/config
+createmount"${1}""${global_dataset_config}"/"${1}"/themes /usr/local/www/nextcloud/themes
+createmount"${1}""${global_dataset_config}"/"${1}"/files /config/files
 
 # Install includes fstab
-iocage exec "${JAIL_NAME}" mkdir -p /mnt/includes
-iocage fstab -a "${JAIL_NAME}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
+iocage exec "${1}" mkdir -p /mnt/includes
+iocage fstab -a "${1}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
 
 
-iocage exec "${JAIL_NAME}" chown -R www:www /config/files
-iocage exec "${JAIL_NAME}" chmod -R 770 /config/files
+iocage exec "${1}" chown -R www:www /config/files
+iocage exec "${1}" chmod -R 770 /config/files
 
 
 #####
@@ -172,22 +174,22 @@ iocage exec "${JAIL_NAME}" chmod -R 770 /config/files
 #####
 
 if [ "${DATABASE}" = "mariadb-external" ] || [ "${DATABASE}" = "mariadb-jail" ]; then
-  iocage exec "${JAIL_NAME}" pkg install -qy mariadb103-client php73-pdo_mysql php73-mysqli
+  iocage exec "${1}" pkg install -qy mariadb103-client php73-pdo_mysql php73-mysqli
 elif [ "${DATABASE}" = "pgsql-external" ]; then
-  iocage exec "${JAIL_NAME}" pkg install -qy postgresql10-client php73-pgsql php73-pdo_pgsql
+  iocage exec "${1}" pkg install -qy postgresql10-client php73-pgsql php73-pdo_pgsql
 fi
 
 fetch -o /tmp https://getcaddy.com
-if ! iocage exec "${JAIL_NAME}" bash -s personal "${DL_FLAGS}" < /tmp/getcaddy.com
+if ! iocage exec "${1}" bash -s personal "${DL_FLAGS}" < /tmp/getcaddy.com
 then
 	echo "Failed to download/install Caddy"
 	exit 1
 fi
 
-iocage exec "${JAIL_NAME}" sysrc redis_enable="YES"
-iocage exec "${JAIL_NAME}" sysrc php_fpm_enable="YES"
-iocage exec "${JAIL_NAME}" sh -c "make -C /usr/ports/www/php73-opcache clean install BATCH=yes"
-iocage exec "${JAIL_NAME}" sh -c "make -C /usr/ports/devel/php73-pcntl clean install BATCH=yes"
+iocage exec "${1}" sysrc redis_enable="YES"
+iocage exec "${1}" sysrc php_fpm_enable="YES"
+iocage exec "${1}" sh -c "make -C /usr/ports/www/php73-opcache clean install BATCH=yes"
+iocage exec "${1}" sh -c "make -C /usr/ports/devel/php73-pcntl clean install BATCH=yes"
 
 
 #####
@@ -197,65 +199,65 @@ iocage exec "${JAIL_NAME}" sh -c "make -C /usr/ports/devel/php73-pcntl clean ins
 #####
 
 FILE="latest-18.tar.bz2"
-if ! iocage exec "${JAIL_NAME}" fetch -o /tmp https://download.nextcloud.com/server/releases/"${FILE}" https://download.nextcloud.com/server/releases/"${FILE}".asc https://nextcloud.com/nextcloud.asc
+if ! iocage exec "${1}" fetch -o /tmp https://download.nextcloud.com/server/releases/"${FILE}" https://download.nextcloud.com/server/releases/"${FILE}".asc https://nextcloud.com/nextcloud.asc
 then
 	echo "Failed to download Nextcloud"
 	exit 1
 fi
-iocage exec "${JAIL_NAME}" gpg --import /tmp/nextcloud.asc
-if ! iocage exec "${JAIL_NAME}" gpg --verify /tmp/"${FILE}".asc
+iocage exec "${1}" gpg --import /tmp/nextcloud.asc
+if ! iocage exec "${1}" gpg --verify /tmp/"${FILE}".asc
 then
 	echo "GPG Signature Verification Failed!"
 	echo "The Nextcloud download is corrupt."
 	exit 1
 fi
-iocage exec "${JAIL_NAME}" tar xjf /tmp/"${FILE}" -C /usr/local/www/
-iocage exec "${JAIL_NAME}" chown -R www:www /usr/local/www/nextcloud/
+iocage exec "${1}" tar xjf /tmp/"${FILE}" -C /usr/local/www/
+iocage exec "${1}" chown -R www:www /usr/local/www/nextcloud/
 
 
 # Generate and install self-signed cert, if necessary
-if [ "$SELFSIGNED_CERT" -eq 1 ] && [ ! -f "/mnt/${global_dataset_config}/${JAIL_NAME}/ssl/privkey.pem" ]; then
+if [ "$SELFSIGNED_CERT" -eq 1 ] && [ ! -f "/mnt/${global_dataset_config}/${1}/ssl/privkey.pem" ]; then
 	echo "No ssl certificate present, generating self signed certificate"
-	if [ ! -d "/mnt/${global_dataset_config}/${JAIL_NAME}/ssl" ]; then
+	if [ ! -d "/mnt/${global_dataset_config}/${1}/ssl" ]; then
 		echo "cert folder not existing... creating..."
-		iocage exec ${JAIL_NAME} mkdir /config/ssl
+		iocage exec"${1}"mkdir /config/ssl
 	fi
 	openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=${HOST_NAME}" -keyout "${INCLUDES_PATH}"/privkey.pem -out "${INCLUDES_PATH}"/fullchain.pem
-	iocage exec "${JAIL_NAME}" cp /mnt/includes/privkey.pem /config/ssl/privkey.pem
-	iocage exec "${JAIL_NAME}" cp /mnt/includes/fullchain.pem /config/ssl/fullchain.pem
+	iocage exec "${1}" cp /mnt/includes/privkey.pem /config/ssl/privkey.pem
+	iocage exec "${1}" cp /mnt/includes/fullchain.pem /config/ssl/fullchain.pem
 fi
 
 # Copy and edit pre-written config files
-iocage exec "${JAIL_NAME}" cp -f /mnt/includes/php.ini /usr/local/etc/php.ini
-iocage exec "${JAIL_NAME}" cp -f /mnt/includes/redis.conf /usr/local/etc/redis.conf
-iocage exec "${JAIL_NAME}" cp -f /mnt/includes/www.conf /usr/local/etc/php-fpm.d/
+iocage exec "${1}" cp -f /mnt/includes/php.ini /usr/local/etc/php.ini
+iocage exec "${1}" cp -f /mnt/includes/redis.conf /usr/local/etc/redis.conf
+iocage exec "${1}" cp -f /mnt/includes/www.conf /usr/local/etc/php-fpm.d/
 if [ "$STANDALONE_CERT" -eq 1 ] || [ "$DNS_CERT" -eq 1 ]; then
-  iocage exec "${JAIL_NAME}" cp -f /mnt/includes/remove-staging.sh /root/
+  iocage exec "${1}" cp -f /mnt/includes/remove-staging.sh /root/
 fi
 if [ "$NO_CERT" -eq 1 ]; then
   echo "Copying Caddyfile for no SSL"
-  iocage exec "${JAIL_NAME}" cp -f /mnt/includes/Caddyfile-nossl /usr/local/www/Caddyfile
+  iocage exec "${1}" cp -f /mnt/includes/Caddyfile-nossl /usr/local/www/Caddyfile
 elif [ "$SELFSIGNED_CERT" -eq 1 ]; then
   echo "Copying Caddyfile for self-signed cert"
-  iocage exec "${JAIL_NAME}" cp -f /mnt/includes/Caddyfile-selfsigned /usr/local/www/Caddyfile
+  iocage exec "${1}" cp -f /mnt/includes/Caddyfile-selfsigned /usr/local/www/Caddyfile
 else
   echo "Copying Caddyfile for Let's Encrypt cert"
-  iocage exec "${JAIL_NAME}" cp -f /mnt/includes/Caddyfile /usr/local/www/
+  iocage exec "${1}" cp -f /mnt/includes/Caddyfile /usr/local/www/
 fi
-iocage exec "${JAIL_NAME}" cp -f /mnt/includes/caddy /usr/local/etc/rc.d/
+iocage exec "${1}" cp -f /mnt/includes/caddy.rc /usr/local/etc/rc.d/caddy
 
 
-iocage exec "${JAIL_NAME}" sed -i '' "s/yourhostnamehere/${HOST_NAME}/" /usr/local/www/Caddyfile
-iocage exec "${JAIL_NAME}" sed -i '' "s/DNS-PLACEHOLDER/${DNS_SETTING}/" /usr/local/www/Caddyfile
-iocage exec "${JAIL_NAME}" sed -i '' "s/JAIL-IP/${JAIL_IP}/" /usr/local/www/Caddyfile
-iocage exec "${JAIL_NAME}" sed -i '' "s|mytimezone|${nextcloud_time_zone}|" /usr/local/etc/php.ini
+iocage exec "${1}" sed -i '' "s/yourhostnamehere/${HOST_NAME}/" /usr/local/www/Caddyfile
+iocage exec "${1}" sed -i '' "s/DNS-PLACEHOLDER/${DNS_SETTING}/" /usr/local/www/Caddyfile
+iocage exec "${1}" sed -i '' "s/JAIL-IP/${JAIL_IP}/" /usr/local/www/Caddyfile
+iocage exec "${1}" sed -i '' "s|mytimezone|${nextcloud_time_zone}|" /usr/local/etc/php.ini
 
-iocage exec "${JAIL_NAME}" sysrc caddy_enable="YES"
-iocage exec "${JAIL_NAME}" sysrc caddy_cert_email="${CERT_EMAIL}"
-iocage exec "${JAIL_NAME}" sysrc caddy_SNI_default="${HOST_NAME}"
-iocage exec "${JAIL_NAME}" sysrc caddy_env="${DNS_ENV}"
+iocage exec "${1}" sysrc caddy_enable="YES"
+iocage exec "${1}" sysrc caddy_cert_email="${CERT_EMAIL}"
+iocage exec "${1}" sysrc caddy_SNI_default="${HOST_NAME}"
+iocage exec "${1}" sysrc caddy_env="${DNS_ENV}"
 
-iocage restart "${JAIL_NAME}"
+iocage restart "${1}"
 
 if [ "${REINSTALL}" == "true" ]; then
 	echo "Reinstall detected, skipping generaion of new config and database"
@@ -270,53 +272,53 @@ else
 	
 	
 	# Save passwords for later reference
-	iocage exec "${JAIL_NAME}" echo "${DB_NAME} root password is ${DB_ROOT_PASSWORD}" > /root/${JAIL_NAME}_db_password.txt
-	iocage exec "${JAIL_NAME}" echo "Nextcloud database password is ${DB_PASSWORD}" >> /root/${JAIL_NAME}_db_password.txt
-	iocage exec "${JAIL_NAME}" echo "Nextcloud Administrator password is ${ADMIN_PASSWORD}" >> /root/${JAIL_NAME}_db_password.txt
+	iocage exec "${1}" echo "${DB_NAME} root password is ${DB_ROOT_PASSWORD}" > /root/"${1}"_db_password.txt
+	iocage exec "${1}" echo "Nextcloud database password is ${DB_PASSWORD}" >> /root/"${1}"_db_password.txt
+	iocage exec "${1}" echo "Nextcloud Administrator password is ${ADMIN_PASSWORD}" >> /root/"${1}"_db_password.txt
 	
 	# CLI installation and configuration of Nextcloud
 	if [ "${DATABASE}" = "mariadb-external" ] || [ "${DATABASE}" = "mariadb-jail" ]; then
-		iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ maintenance:install --database=\"mysql\" --database-name=\"${DB_DATABASE}\" --database-user=\"${DB_USER}\" --database-pass=\"${DB_PASSWORD}\" --database-host=\"${DB_HOST}\" --admin-user=\"admin\" --admin-pass=\"${ADMIN_PASSWORD}\" --data-dir=\"/config/files\""
-		iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set mysql.utf8mb4 --type boolean --value=\"true\""
+		iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ maintenance:install --database=\"mysql\" --database-name=\"${DB_DATABASE}\" --database-user=\"${DB_USER}\" --database-pass=\"${DB_PASSWORD}\" --database-host=\"${DB_HOST}\" --admin-user=\"admin\" --admin-pass=\"${ADMIN_PASSWORD}\" --data-dir=\"/config/files\""
+		iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set mysql.utf8mb4 --type boolean --value=\"true\""
 	elif [ "${DATABASE}" = "pgsql-external" ]; then
-		iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ maintenance:install --database=\"pgsql\" --database-name=\"${DB_DATABASE}\" --database-user=\"${DB_USER}\" --database-pass=\"${DB_PASSWORD}\" --database-host=\"${DB_HOST}\" --admin-user=\"admin\" --admin-pass=\"${ADMIN_PASSWORD}\" --data-dir=\"/config/files\""
+		iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ maintenance:install --database=\"pgsql\" --database-name=\"${DB_DATABASE}\" --database-user=\"${DB_USER}\" --database-pass=\"${DB_PASSWORD}\" --database-host=\"${DB_HOST}\" --admin-user=\"admin\" --admin-pass=\"${ADMIN_PASSWORD}\" --data-dir=\"/config/files\""
 	fi
-	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ db:add-missing-indices"
-	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ db:convert-filecache-bigint --no-interaction"
-	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set logtimezone --value=\"${nextcloud_time_zone}\""
-	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set log_type --value="file"'
-	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set logfile --value="/var/log/nextcloud.log"'
-	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set loglevel --value="2"'
-	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set logrotate_size --value="104847600"'
-	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set memcache.local --value="\OC\Memcache\APCu"'
-	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set redis host --value="/tmp/redis.sock"'
-	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set redis port --value=0 --type=integer'
-	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set memcache.locking --value="\OC\Memcache\Redis"'
-	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwritehost --value=\"${HOST_NAME}\""
-	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwriteprotocol --value=\"https\""
+	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ db:add-missing-indices"
+	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ db:convert-filecache-bigint --no-interaction"
+	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set logtimezone --value=\"${nextcloud_time_zone}\""
+	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set log_type --value="file"'
+	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set logfile --value="/var/log/nextcloud.log"'
+	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set loglevel --value="2"'
+	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set logrotate_size --value="104847600"'
+	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set memcache.local --value="\OC\Memcache\APCu"'
+	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set redis host --value="/tmp/redis.sock"'
+	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set redis port --value=0 --type=integer'
+	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set memcache.locking --value="\OC\Memcache\Redis"'
+	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwritehost --value=\"${HOST_NAME}\""
+	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwriteprotocol --value=\"https\""
 	if [ "$NO_CERT" -eq 1 ]; then
-		iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"http://${HOST_NAME}/\""
+		iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"http://${HOST_NAME}/\""
 	else
-		iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"https://${HOST_NAME}/\""
+		iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"https://${HOST_NAME}/\""
 	fi
-	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set htaccess.RewriteBase --value="/"'
-	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ maintenance:update:htaccess'
-	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set trusted_domains 1 --value=\"${HOST_NAME}\""
-	iocage exec "${JAIL_NAME}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set trusted_domains 2 --value=\"${JAIL_IP}\""
-	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ app:enable encryption'
-	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ encryption:enable'
-	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ encryption:disable'
-	iocage exec "${JAIL_NAME}" su -m www -c 'php /usr/local/www/nextcloud/occ background:cron'
+	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set htaccess.RewriteBase --value="/"'
+	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ maintenance:update:htaccess'
+	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set trusted_domains 1 --value=\"${HOST_NAME}\""
+	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set trusted_domains 2 --value=\"${JAIL_IP}\""
+	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ app:enable encryption'
+	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ encryption:enable'
+	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ encryption:disable'
+	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ background:cron'
 	
 fi
 
-iocage exec "${JAIL_NAME}" touch /var/log/nextcloud.log
-iocage exec "${JAIL_NAME}" chown www /var/log/nextcloud.log
-iocage exec "${JAIL_NAME}" su -m www -c 'php -f /usr/local/www/nextcloud/cron.php'
-iocage exec "${JAIL_NAME}" crontab -u www /mnt/includes/www-crontab
+iocage exec "${1}" touch /var/log/nextcloud.log
+iocage exec "${1}" chown www /var/log/nextcloud.log
+iocage exec "${1}" su -m www -c 'php -f /usr/local/www/nextcloud/cron.php'
+iocage exec "${1}" crontab -u www /mnt/includes/www-crontab
 
 # Don't need /mnt/includes any more, so unmount it
-iocage fstab -r "${JAIL_NAME}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
+iocage fstab -r "${1}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
 
 # Done!
 echo "Installation complete!"
@@ -338,7 +340,7 @@ else
 	echo "Database user = ${DB_USER}"
 	echo "Database password = ${DB_PASSWORD}"
 	echo ""
-	echo "All passwords are saved in /root/${JAIL_NAME}_db_password.txt"
+	echo "All passwords are saved in /root/${1}_db_password.txt"
 fi
 
 echo ""
@@ -347,7 +349,7 @@ if [ "$STANDALONE_CERT" -eq 1 ] || [ "$DNS_CERT" -eq 1 ]; then
   echo "This certificate will not be trusted by your browser and will cause SSL errors"
   echo "when you connect.  Once you've verified that everything else is working"
   echo "correctly, you should issue a trusted certificate.  To do this, run:"
-  echo "  iocage exec ${JAIL_NAME} /root/remove-staging.sh"
+  echo "iocage exec ${1}/root/remove-staging.sh"
   echo ""
 elif [ "$SELFSIGNED_CERT" -eq 1 ]; then
   echo "You have chosen to create a self-signed TLS certificate for your Nextcloud"

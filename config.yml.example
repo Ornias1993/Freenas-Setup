@@ -1,7 +1,7 @@
 global:
   config:
   # Config file syntax version (not same as script version)
-    version: 2.0
+    version: 1.2
   # Relevant dataset paths, please use the ZFS dataset syntax such as: tank/apps
   dataset:
    # dataset for internal jail config files
@@ -81,10 +81,10 @@ jail:
     dns_settings: ""
     cert_email: "placeholder@holdplace.org"
     database: mariadb
-  #  db_database:
-  #  db_user:
-  #  db_password
-  #  db_host
+    # db_database:
+    # db_user:
+    # db_password
+    # db_host
     
   mariadb: 
     blueprint: mariadb
@@ -93,7 +93,7 @@ jail:
     db_root_password: ReplaceThisWithYourOwnRootPAssword
     host_name: mariadb.local.example
   
-  bitwarden: bitwarden
+  bitwarden:
     blueprint: 
     ip4_addr: 192.168.1.97/24
     gateway: 192.168.1.1
@@ -105,15 +105,15 @@ jail:
     blueprint: influxdb
     ip4_addr: 192.168.1.250/24
     gateway: 192.168.1.1
-    database: influxdb
 
-unifi: unifi
-  ip4_addr: 192.168.1.251/24
-  gateway: 192.168.1.1
-  unifi_poller: true
-  db_jail: influxdb
-  up_db_name: unifi
-  up_db_user: unifi-poller
-  up_db_password: unifi-poller
-  up_user: upoller
-  up_password: upoller
+  unifi:
+    blueprint: unifi
+    ip4_addr: 192.168.1.251/24
+    gateway: 192.168.1.1
+    unifi_poller: true
+    db_jail: influxdb
+    up_db_name: unifi
+    up_db_user: unifi-poller
+    up_db_password: unifi-poller
+    up_user: upoller
+    up_password: upoller
