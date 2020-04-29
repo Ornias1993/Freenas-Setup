@@ -17,9 +17,9 @@ INCLUDES_PATH="${SCRIPT_DIR}/jails/unifi/includes"
 iocage exec "${JAIL_NAME}" mkdir -p /config/controller/mongodb
 iocage exec "${JAIL_NAME}" cp -Rp /usr/local/share/java/unifi /config/controller
 iocage exec "${JAIL_NAME}" chown -R mongodb:mongodb /config/controller/mongodb
-cp "${INCLUDES_PATH}"/mongodb.conf "${global_dataset_iocage}"/jails/"${JAIL_NAME}"/root/usr/local/etc
-cp "${INCLUDES_PATH}"/rc/mongod "${global_dataset_iocage}"/jails/"${JAIL_NAME}"/root/usr/local/etc/rc.d/
-cp "${INCLUDES_PATH}"/rc/unifi "${global_dataset_iocage}"/jails/"${JAIL_NAME}"/root/usr/local/etc/rc.d/
+cp "${INCLUDES_PATH}"/mongodb.conf /mnt/"${global_dataset_iocage}"/jails/"${JAIL_NAME}"/root/usr/local/etc
+cp "${INCLUDES_PATH}"/rc/mongod /mnt/"${global_dataset_iocage}"/jails/"${JAIL_NAME}"/root/usr/local/etc/rc.d/
+cp "${INCLUDES_PATH}"/rc/unifi /mnt/"${global_dataset_iocage}"/jails/"${JAIL_NAME}"/root/usr/local/etc/rc.d/
 iocage exec "${JAIL_NAME}" sysrc unifi_enable=YES
 iocage exec "${JAIL_NAME}" service unifi start
 
@@ -58,7 +58,7 @@ else
   iocage exec "${JAIL_NAME}" mv /usr/local/etc/rc.d/unifi-poller /usr/local/etc/rc.d/unifi_poller
   cp "${INCLUDES_PATH}"/up.conf /mnt/"${global_dataset_config}"/"${JAIL_NAME}"
   cp "${INCLUDES_PATH}"/up.conf.example /mnt/"${global_dataset_config}"/"${JAIL_NAME}"
-  cp "${INCLUDES_PATH}"/unifi_poller "${global_dataset_iocage}"/jails/"${JAIL_NAME}"/root/usr/local/etc/rc.d/unifi_poller
+  cp "${INCLUDES_PATH}"/unifi_poller /mnt/"${global_dataset_iocage}"/jails/"${JAIL_NAME}"/root/usr/local/etc/rc.d/unifi_poller
   iocage exec "${JAIL_NAME}" sed -i '' "s|influxdbuser|${DB_USER}|" /config/up.conf
   iocage exec "${JAIL_NAME}" sed -i '' "s|influxdbpass|${DB_PASS}|" /config/up.conf
   iocage exec "${JAIL_NAME}" sed -i '' "s|unifidb|${DB_NAME}|" /config/up.conf
