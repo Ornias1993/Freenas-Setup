@@ -72,19 +72,8 @@ jail:
     gateway: 192.168.1.1
     time_zone: Europe/Amsterdam
     host_name: cloud.example.com
-    database: mariadb
-    standalone_cert: 0
-    selfsigned_cert: 0
-    dns_cert: 0
-    no_cert: 1
-    dl_flags: ""
-    dns_settings: ""
-    cert_email: "placeholder@holdplace.org"
-    database: mariadb
-    # db_database:
-    # db_user:
-    # db_password
-    # db_host
+    db_jail: "mariadb"
+    admin_password: "PUTYOUROWNADMINPASSWORDHERE"
     
   mariadb: 
     blueprint: mariadb
