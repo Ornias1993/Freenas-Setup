@@ -17,20 +17,37 @@ DB_IP="${!DB_IP%/*}"
 
 # shellcheck disable=SC2154
 DB_NAME="jail_${1}_up_db_name"
-DB_NAME="${!DB_NAME:-unifi}"
+DB_NAME="${!DB_NAME:-$1}"
 
 # shellcheck disable=SC2154
 DB_USER="jail_${1}_up_db_user"
+DB_USER="${!DB_USER:-$DB_NAME}"
 
 # shellcheck disable=SC2154
 DB_PASS="jail_${1}_up_db_password"
 
 # shellcheck disable=SC2154
 UP_USER="jail_${1}_up_user"
+UP_USER="${!UP_USER:-$1}"
 
 # shellcheck disable=SC2154
 UP_PASS="jail_${1}_up_password"
 INCLUDES_PATH="${SCRIPT_DIR}/blueprints/unifi/includes"
+
+if [ -z "${!DB_PASSWORD}" ]; then
+	echo "up_db_password can't be empty"
+	exit 1
+fi
+
+if [ -z "${!DB_JAIL}" ]; then
+	echo "db_jail can't be empty"
+	exit 1
+fi
+
+if [ -z "${!UP_PASS}" ]; then
+	echo "up_password can't be empty"
+	exit 1
+fi
 
 # Enable persistent Unifi Controller data
 iocage exec "${1}" mkdir -p /config/controller/mongodb
@@ -58,12 +75,12 @@ else
       echo "${!DB_JAIL} jail with database ${DB_NAME} already exists. Skipping database creation... "
     else
       echo "${!DB_JAIL} jail exists, but database ${DB_NAME} does not. Creating database ${DB_NAME}."
-      if [[ -z "${!DB_USER}" ]] || [[ -z "${!DB_PASS}" ]]; then
+      if [[ -z "${DB_USER}" ]] || [[ -z "${!DB_PASS}" ]]; then
         echo "Database username and password not provided. Cannot create database without credentials. Exiting..."
         exit 1
       else
-        iocage exec "${!DB_JAIL}" "curl -XPOST -u ${!DB_USER}:${!DB_PASS} http://localhost:8086/query --data-urlencode 'q=CREATE DATABASE ${DB_NAME}'"
-        echo "Database ${DB_NAME} created with username ${!DB_USER} with password ${!DB_PASS}."
+        iocage exec "${!DB_JAIL}" "curl -XPOST -u ${DB_USER}:${!DB_PASS} http://localhost:8086/query --data-urlencode 'q=CREATE DATABASE ${DB_NAME}'"
+        echo "Database ${DB_NAME} created with username ${DB_USER} with password ${!DB_PASS}."
       fi
     fi
   else
@@ -81,13 +98,11 @@ else
   # shellcheck disable=SC2154
   cp "${INCLUDES_PATH}"/up.conf /mnt/"${global_dataset_config}"/"${1}"
   # shellcheck disable=SC2154
-  cp "${INCLUDES_PATH}"/up.conf.example /mnt/"${global_dataset_config}"/"${1}"
-  # shellcheck disable=SC2154
   cp "${INCLUDES_PATH}"/rc/unifi_poller.rc /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.d/unifi_poller
-  iocage exec "${1}" sed -i '' "s|influxdbuser|${!DB_USER}|" /config/up.conf
+  iocage exec "${1}" sed -i '' "s|influxdbuser|${DB_USER}|" /config/up.conf
   iocage exec "${1}" sed -i '' "s|influxdbpass|${!DB_PASS}|" /config/up.conf
   iocage exec "${1}" sed -i '' "s|unifidb|${DB_NAME}|" /config/up.conf
-  iocage exec "${1}" sed -i '' "s|unifiuser|${!UP_USER}|" /config/up.conf
+  iocage exec "${1}" sed -i '' "s|unifiuser|${UP_USER}|" /config/up.conf
   iocage exec "${1}" sed -i '' "s|unifipassword|${!UP_PASS}|" /config/up.conf
   iocage exec "${1}" sed -i '' "s|dbip|http://${DB_IP}:8086|" /config/up.conf
 
@@ -97,6 +112,6 @@ else
 
   echo "Installation complete!"
   echo "Unifi Controller is accessible at https://${JAIL_IP}:8443."
-  echo "Please login to the Unifi Controller and add ${!UP_USER} as a read-only user."
+  echo "Please login to the Unifi Controller and add ${UP_USER} as a read-only user."
   echo "In Grafana, add Unifi-Poller as a data source."
 fi
