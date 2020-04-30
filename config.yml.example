@@ -74,6 +74,7 @@ jail:
     host_name: cloud.example.com
     db_jail: "mariadb"
     admin_password: "PUTYOUROWNADMINPASSWORDHERE"
+	db_password: "PLEASEALSOPUTYOURPASSWORDHEREADIFFERNTONE"
     
   mariadb: 
     blueprint: mariadb

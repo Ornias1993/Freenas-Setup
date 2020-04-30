@@ -22,8 +22,10 @@ DNS_ENV="jail_${1}_dns_env"
 DB_TYPE="jail_${1}_db_type"
 DB_TYPE="${!DB_TYPE:-mariadb}"
 DB_JAIL="jail_${1}_db_jail"
-DB_HOST="jail_${!!DB_JAIL}_ip4_addr"
+# shellcheck disable=SC2154
+DB_HOST="jail_${!DB_JAIL}_ip4_addr"
 DB_HOST="${!DB_HOST%/*}:3306"
+
 DB_PASSWORD="jail_${1}_db_password"
 
 DB_DATABASE="jail_${1}_db_database"
@@ -108,9 +110,9 @@ fi
 #####
 
 # Create and Mount Nextcloud, Config and Files
-createmount"${1}""${global_dataset_config}"/"${1}"/config /usr/local/www/nextcloud/config
-createmount"${1}""${global_dataset_config}"/"${1}"/themes /usr/local/www/nextcloud/themes
-createmount"${1}""${global_dataset_config}"/"${1}"/files /config/files
+createmount "${1}" "${global_dataset_config}"/"${1}"/config /usr/local/www/nextcloud/config
+createmount "${1}" "${global_dataset_config}"/"${1}"/themes /usr/local/www/nextcloud/themes
+createmount "${1}" "${global_dataset_config}"/"${1}"/files /config/files
 
 # Install includes fstab
 iocage exec "${1}" mkdir -p /mnt/includes
@@ -132,7 +134,7 @@ if [ "${DB_TYPE}" = "mariadb" ]; then
 fi
 
 fetch -o /tmp https://getcaddy.com
-if ! iocage exec "${1}" bash -s personal "${!DL_FLAGS}" < /tmp/getcaddy.com
+if ! iocage exec "${1}" bash -s personal "${DL_FLAGS}" < /tmp/getcaddy.com
 then
 	echo "Failed to download/install Caddy"
 	exit 1
@@ -172,7 +174,7 @@ if [ "$CERT_TYPE" == "SELFSIGNED_CERT" ] && [ ! -f "/mnt/${global_dataset_config
 	echo "No ssl certificate present, generating self signed certificate"
 	if [ ! -d "/mnt/${global_dataset_config}/${1}/ssl" ]; then
 		echo "cert folder not existing... creating..."
-		iocage exec"${1}"mkdir /config/ssl
+		iocage exec "${1}" mkdir /config/ssl
 	fi
 	openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=${!HOST_NAME}" -keyout "${INCLUDES_PATH}"/privkey.pem -out "${INCLUDES_PATH}"/fullchain.pem
 	iocage exec "${1}" cp /mnt/includes/privkey.pem /config/ssl/privkey.pem
@@ -205,14 +207,14 @@ iocage exec "${1}" cp -f /mnt/includes/caddy.rc /usr/local/etc/rc.d/caddy
 
 
 iocage exec "${1}" sed -i '' "s/yourhostnamehere/${!HOST_NAME}/" /usr/local/www/Caddyfile
-iocage exec "${1}" sed -i '' "s/DNS-PLACEHOLDER/${!DNS_SETTING}/" /usr/local/www/Caddyfile
+iocage exec "${1}" sed -i '' "s/DNS-PLACEHOLDER/${DNS_SETTING}/" /usr/local/www/Caddyfile
 iocage exec "${1}" sed -i '' "s/JAIL-IP/${JAIL_IP}/" /usr/local/www/Caddyfile
 iocage exec "${1}" sed -i '' "s|mytimezone|${!TIME_ZONE}|" /usr/local/etc/php.ini
 
 iocage exec "${1}" sysrc caddy_enable="YES"
 iocage exec "${1}" sysrc caddy_cert_email="${CERT_EMAIL}"
 iocage exec "${1}" sysrc caddy_SNI_default="${!HOST_NAME}"
-iocage exec "${1}" sysrc caddy_env="${DNS_ENV}"
+iocage exec "${1}" sysrc caddy_env="${!DNS_ENV}"
 
 iocage restart "${1}"
 
@@ -234,8 +236,8 @@ else
 	iocage exec "${1}" echo "Nextcloud Administrator password is ${ADMIN_PASSWORD}" >> /root/"${1}"_db_password.txt
 	
 	# CLI installation and configuration of Nextcloud
-	if [ "${DB_TYPE}" = "mariadb" ] || [ "${DB_TYPE}" = "mariadb" ]; then
-		iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ maintenance:install --database=\"mysql\" --database-name=\"${DB_DATABASE}\" --database-user=\"${DB_USER}\" --database-pass=\"${!DB_PASSWORD}\" --database-host=\"${DB_HOST}\" --admin-user=\"admin\" --admin-pass=\"${ADMIN_PASSWORD}\" --data-dir=\"/config/files\""
+	if [ "${DB_TYPE}" = "mariadb" ]; then
+		iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ maintenance:install --database=\"mysql\" --database-name=\"${DB_DATABASE}\" --database-user=\"${DB_USER}\" --database-pass=\"${!DB_PASSWORD}\" --database-host=\"${DB_HOST}\" --admin-user=\"admin\" --admin-pass=\"${!ADMIN_PASSWORD}\" --data-dir=\"/config/files\""
 		iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set mysql.utf8mb4 --type boolean --value=\"true\""
 	fi
 	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ db:add-missing-indices"
