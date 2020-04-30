@@ -5,30 +5,27 @@
 JAIL_IP="jail_${1}_ip4_addr"
 JAIL_IP="${!JAIL_IP%/*}"
 HOST_NAME="jail_${1}_host_name"
-DB_DATABASE="jail_${1}_db_datavase"
+
+DB_DATABASE="jail_${1}_db_database"
+DB_DATABASE="${!DB_DATABASE:-$1}"
+
 DB_USER="jail_${1}_db_user"
+DB_USER="${!DB_USER:-$DB_DATABASE}"
+
 # shellcheck disable=SC2154
-INSTALL_TYPE="jail_${1}_type"
+INSTALL_TYPE="jail_${1}_db_type"
+INSTALL_TYPE="${!INSTALL_TYPE:-mariadb}"
+
 DB_JAIL="jail_${1}_db_jail"
-DB_JAIL="${!DB_JAIL}"
 # shellcheck disable=SC2154
-DB_HOST="${DB_JAIL}_ip4_addr"
+DB_HOST="jail_${!DB_JAIL}_ip4_addr"
 DB_HOST="${!DB_HOST%/*}:3306"
+
 # shellcheck disable=SC2154
 DB_PASSWORD="jail_${1}_db_password"
-DB_STRING="mysql://${!DB_USER}:${!DB_PASSWORD}@${DB_HOST}/${!DB_DATABASE}"
+DB_STRING="mysql://${DB_USER}:${!DB_PASSWORD}@${DB_HOST}/${DB_DATABASE}"
 # shellcheck disable=SC2154
 ADMIN_TOKEN="jail_${1}_admin_token"
-
-if [ -z "${!DB_USER}" ]; then
-	echo "db_user can't be empty"
-	exit 1
-fi
-
-if [ -z "${!DB_DATABASE}" ]; then
-	echo "db_database can't be empty"
-	exit 1
-fi
 
 if [ -z "${!DB_PASSWORD}" ]; then
 	echo "db_password can't be empty"
@@ -58,7 +55,7 @@ iocage exec "${1}" git clone https://github.com/dani-garcia/bitwarden_rs/ /usr/l
 TAG=$(iocage exec "${1}" "git -C /usr/local/share/bitwarden/src tag --sort=v:refname | tail -n1")
 iocage exec "${1}" "git -C /usr/local/share/bitwarden/src checkout ${TAG}"
 #TODO replace with: cargo build --features mysql --release
-if [ "${!INSTALL_TYPE}" == "mariadb" ]; then
+if [ "${INSTALL_TYPE}" == "mariadb" ]; then
 	iocage exec "${1}" "cd /usr/local/share/bitwarden/src && $HOME/.cargo/bin/cargo build --features mysql --release"
 	iocage exec "${1}" "cd /usr/local/share/bitwarden/src && $HOME/.cargo/bin/cargo install diesel_cli --no-default-features --features mysql"
 else
@@ -90,11 +87,11 @@ fi
 
 if [ -f "/mnt/${global_dataset_config}/${1}/bitwarden.log" ]; then
 	echo "Reinstall of Bitwarden detected... using existing config and database"
-elif [ "${!INSTALL_TYPE}" == "mariadb" ]; then
+elif [ "${INSTALL_TYPE}" == "mariadb" ]; then
 	echo "No config detected, doing clean install, utilizing the Mariadb database ${DB_HOST}"
-	iocage exec "${DB_JAIL}" mysql -u root -e "CREATE DATABASE ${DB_DATABASE};"
-	iocage exec "${DB_JAIL}" mysql -u root -e "GRANT ALL ON ${DB_DATABASE}.* TO ${DB_USER}@${JAIL_IP} IDENTIFIED BY '${!DB_PASSWORD}';"
-	iocage exec "${DB_JAIL}" mysqladmin reload
+	iocage exec "${!DB_JAIL}" mysql -u root -e "CREATE DATABASE ${DB_DATABASE};"
+	iocage exec "${!DB_JAIL}" mysql -u root -e "GRANT ALL ON ${DB_DATABASE}.* TO ${DB_USER}@${JAIL_IP} IDENTIFIED BY '${!DB_PASSWORD}';"
+	iocage exec "${!DB_JAIL}" mysqladmin reload
 else
 	echo "No config detected, doing clean install."
 fi
