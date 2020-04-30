@@ -110,6 +110,13 @@ export global_dataset_iocage
 for configpath in "${SCRIPT_DIR}"/blueprints/*/config.yml; do ! eval $(parse_yaml "${configpath}"); done
 eval "$(parse_yaml config.yml)"
 
+# shellcheck disable=SC2154
+if [ "${global_version}" != "1.2" ]; then
+	echo "You are using old config.yml synatx."
+	echo "Please check the wiki for required changes"
+	exit 1
+fi
+
 # Check and Execute requested jail destructions
 if [ ${#destroyjails[@]} -eq 0 ]; then 
 	echo "No jails to destroy"
