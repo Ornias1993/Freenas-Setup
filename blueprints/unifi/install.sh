@@ -34,7 +34,7 @@ UP_USER="${!UP_USER:-$1}"
 UP_PASS="jail_${1}_up_password"
 INCLUDES_PATH="${SCRIPT_DIR}/blueprints/unifi/includes"
 
-if [ -z "${!DB_PASSWORD}" ]; then
+if [ -z "${DB_PASS}" ]; then
 	echo "up_db_password can't be empty"
 	exit 1
 fi
@@ -70,7 +70,7 @@ else
   # Check if influxdb container exists, create unifi database if it does, error if it is not.
   echo "Checking if the database jail and database exist..."
   if [[ -d /mnt/"${global_dataset_iocage}"/jails/"${!DB_JAIL}" ]]; then
-    DB_EXISTING=$(iocage exec "${!DB_JAIL}" curl -G http://localhost:8086/query --data-urlencode 'q=SHOW DATABASES' | jq '.results [] | .series [] | .values []' | grep "$DB_NAME" | sed 's/"//g' | sed 's/^ *//g')
+    DB_EXISTING=$(iocage exec "${!DB_JAIL}" curl -G http://"${DB_IP}":8086/query --data-urlencode 'q=SHOW DATABASES' | jq '.results [] | .series [] | .values []' | grep "$DB_NAME" | sed 's/"//g' | sed 's/^ *//g')
     if [[ "$DB_NAME" == "$DB_EXISTING" ]]; then
       echo "${!DB_JAIL} jail with database ${DB_NAME} already exists. Skipping database creation... "
     else
@@ -79,7 +79,7 @@ else
         echo "Database username and password not provided. Cannot create database without credentials. Exiting..."
         exit 1
       else
-        iocage exec "${!DB_JAIL}" "curl -XPOST -u ${DB_USER}:${!DB_PASS} http://localhost:8086/query --data-urlencode 'q=CREATE DATABASE ${DB_NAME}'"
+        iocage exec "${!DB_JAIL}" "curl -XPOST -u ${DB_USER}:${!DB_PASS} http://"${DB_IP}":8086/query --data-urlencode 'q=CREATE DATABASE ${DB_NAME}'"
         echo "Database ${DB_NAME} created with username ${DB_USER} with password ${!DB_PASS}."
       fi
     fi
@@ -99,6 +99,7 @@ else
   cp "${INCLUDES_PATH}"/up.conf /mnt/"${global_dataset_config}"/"${1}"
   # shellcheck disable=SC2154
   cp "${INCLUDES_PATH}"/rc/unifi_poller.rc /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.d/unifi_poller
+  chmod +x /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.d/unifi_poller
   iocage exec "${1}" sed -i '' "s|influxdbuser|${DB_USER}|" /config/up.conf
   iocage exec "${1}" sed -i '' "s|influxdbpass|${!DB_PASS}|" /config/up.conf
   iocage exec "${1}" sed -i '' "s|unifidb|${DB_NAME}|" /config/up.conf
