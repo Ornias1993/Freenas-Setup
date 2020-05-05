@@ -79,6 +79,7 @@ else
         echo "Database username and password not provided. Cannot create database without credentials. Exiting..."
         exit 1
       else
+        # shellcheck disable=SC2027,2086
         iocage exec "${!DB_JAIL}" "curl -XPOST -u ${DB_USER}:${!DB_PASS} http://"${DB_IP}":8086/query --data-urlencode 'q=CREATE DATABASE ${DB_NAME}'"
         echo "Database ${DB_NAME} created with username ${DB_USER} with password ${!DB_PASS}."
       fi
