@@ -34,7 +34,7 @@ UP_USER="${!UP_USER:-$1}"
 UP_PASS="jail_${1}_up_password"
 INCLUDES_PATH="${SCRIPT_DIR}/blueprints/unifi/includes"
 
-if [ -z "${DB_PASS}" ]; then
+if [ -z "${!DB_PASS}" ]; then
 	echo "up_db_password can't be empty"
 	exit 1
 fi
