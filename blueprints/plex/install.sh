@@ -18,7 +18,7 @@ createmount "$1" "${global_dataset_media}"/shows /mnt/media/shows
 # Create plex ramdisk if specified
 # shellcheck disable=SC2154
 if [ -z "${plex_ramdisk}" ]; then
-	echo "no ramdisk specified for plex, continuing without randisk"
+	echo "no ramdisk specified for plex, continuing without ramdisk"
 else
 	iocage fstab -a "$1" tmpfs /tmp_transcode tmpfs rw,size="${plex_ramdisk}",mode=1777 0 0
 fi
