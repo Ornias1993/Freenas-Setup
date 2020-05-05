@@ -27,6 +27,5 @@ sleep 15
 
 # Done!
 echo "Installation complete!"
-echo "Your may connect InfluxDB plugins to the InfluxDB jail at http://${JAIL_IP}:8086."
 echo "You may connect InfluxDB plugins to the InfluxDB jail at http://${JAIL_IP}:8086."
 echo ""
