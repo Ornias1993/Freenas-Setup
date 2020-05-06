@@ -19,12 +19,17 @@ iocage exec "${1}" mkdir -p /config/plugins
 iocage exec "${1}" mkdir -p /config/provisioning
 
 cp "${INCLUDES_PATH}"/grafana.conf /mnt/"${global_dataset_config}"/"${1}"
-iocage exec "${1}" chown -R "${!USER}":grafana /config
 
-# TODO User is hit or miss 
-iocage exec "${1}" sed -i '' "s|jail_admin|${!USER}|" /config/grafana.conf
+if [ ! "${USER}" == "grafana" ]; then
+  iocage exec "$1" "pw user add ${USER} -n ${USER} -d /nonexistent -s /usr/bin/nologin"
+fi
+
+iocage exec "${1}" chown -R "${USER}":grafana /config
+
+iocage exec "${1}" sed -i '' "s|jail_admin|${USER}|" /config/grafana.conf
 iocage exec "${1}" sed -i '' "s|jail_password|${!PASS}|" /config/grafana.conf
 
 iocage exec "${1}" sysrc grafana_conf="/config/grafana.conf"
+iocage exec "${1}" sysrc grafana_user="${USER}"
 iocage exec "${1}" sysrc grafana_enable="YES" 
 iocage exec "${1}" service grafana start
