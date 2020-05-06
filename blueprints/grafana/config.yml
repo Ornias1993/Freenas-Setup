@@ -1,0 +1,3 @@
+blueprint:
+  grafana:
+    pkgs: grafana5
