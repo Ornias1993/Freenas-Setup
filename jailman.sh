@@ -21,7 +21,7 @@ fi
 
 # Auto Update
 BRANCH="dev"
-gitupdate ${BRANCH}
+gitupdate $(git rev-parse --abbrev-ref HEAD)
 
 # If no option is given, point to the help menu
 if [ $# -eq 0 ]

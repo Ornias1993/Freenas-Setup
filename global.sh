@@ -50,6 +50,18 @@ jailip4="jail_${1}_ip4_addr"
 jailgateway="jail_${1}_gateway"
 jaildhcp="jail_${1}_dhcp"
 setdhcp=${!jaildhcp}
+# shellcheck disable=SC2154
+reqvars=blueprint_${2}_reqvars
+reqvars=${!reqvars}
+
+for reqvar in $reqvars
+do
+	varname=jail_${1}_${reqvar}
+	if [ -z "${!varname}" ]; then
+	echo "$varname can't be empty"
+	exit 1
+	fi
+done
 
 if [ -z "${!jailinterfaces}" ]; then 
 	jailinterfaces="vnet0:bridge0"
@@ -105,6 +117,22 @@ echo "Jail creation completed for ${1}"
 
 }
 
+# automatic update function
+initjail() {
+# shellcheck disable=SC2154
+blueprint=jail_${1}_blueprint
+varlist=blueprint_${!blueprint}_vars
+
+for var in ${!varlist}
+do
+	value="jail_${1}_$var"
+    declare -g "${var}=${!value}"
+	echo "Set variable $var to ${!var}"
+	export $var
+done
+}
+export -f initjail
+
 # $1 = jail name
 # $2 = Dataset
 # $3 = Target mountpoint
@@ -135,3 +163,4 @@ createmount() {
 	fi
 }
 export -f createmount
+
