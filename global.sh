@@ -128,7 +128,6 @@ do
 	value="jail_${1}_$var"
     declare -g "${var}=${!value}"
 	echo "Set variable $var to ${!var}"
-	export $var
 done
 }
 export -f initjail
