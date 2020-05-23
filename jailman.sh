@@ -11,7 +11,7 @@ echo "Working directory for jailman.sh is: ${SCRIPT_DIR}"
 
 #Includes
 # shellcheck source=global.sh
-source "${SCRIPT_DIR}/global.sh"
+source "${SCRIPT_DIR}/includes/global.sh"
 
 # Check for root privileges
 if ! [ "$(id -u)" = 0 ]; then
