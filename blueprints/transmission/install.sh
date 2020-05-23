@@ -4,8 +4,7 @@
 initjail "$1"
 
 # Check if dataset Downloads dataset exist, create if they do not.
-	# shellcheck disable=SC2154
-createmount "$1" "${global_dataset_downloads}" /mnt/downloads
+	createmount "$1" "${global_dataset_downloads}" /mnt/downloads
 
 # Check if dataset Complete Downloads dataset exist, create if they do not.
 createmount "$1" "${global_dataset_downloads}"/complete /mnt/downloads/complete

@@ -50,9 +50,7 @@ jailip4="jail_${1}_ip4_addr"
 jailgateway="jail_${1}_gateway"
 jaildhcp="jail_${1}_dhcp"
 setdhcp=${!jaildhcp}
-# shellcheck disable=SC2154
 reqvars=blueprint_${2}_reqvars
-# shellcheck disable=SC2154
 reqvars="${!reqvars} ${global_jails_reqvars}"
 
 for reqvar in $reqvars
@@ -76,20 +74,17 @@ if [ -z "${setdhcp}" ] && [ -z "${!jailip4}" ] && [ -z "${!jailgateway}" ]; then
 fi
 
 echo "Creating jail for $1"
-# shellcheck disable=SC2154
 pkgs="$(sed 's/[^[:space:]]\{1,\}/"&"/g;s/ /,/g' <<<"${global_jails_pkgs} ${!blueprintpkgs}")"
 echo '{"pkgs":['"${pkgs}"']}' > /tmp/pkg.json
 if [ "${setdhcp}" == "on" ]
 then
-	# shellcheck disable=SC2154
-	if ! iocage create -n "${1}" -p /tmp/pkg.json -r "${global_jails_version}" interfaces="${jailinterfaces}" dhcp="on" vnet="on" allow_raw_sockets="1" boot="on" -b
+		if ! iocage create -n "${1}" -p /tmp/pkg.json -r "${global_jails_version}" interfaces="${jailinterfaces}" dhcp="on" vnet="on" allow_raw_sockets="1" boot="on" -b
 	then
 		echo "Failed to create jail"
 		exit 1
 	fi
 else
-	# shellcheck disable=SC2154
-	if ! iocage create -n "${1}" -p /tmp/pkg.json -r "${global_jails_version}" interfaces="${jailinterfaces}" ip4_addr="vnet0|${!jailip4}" defaultrouter="${!jailgateway}" vnet="on" allow_raw_sockets="1" boot="on" -b
+		if ! iocage create -n "${1}" -p /tmp/pkg.json -r "${global_jails_version}" interfaces="${jailinterfaces}" ip4_addr="vnet0|${!jailip4}" defaultrouter="${!jailgateway}" vnet="on" allow_raw_sockets="1" boot="on" -b
 	then
 		echo "Failed to create jail"
 		exit 1
@@ -98,7 +93,6 @@ fi
 
 rm /tmp/pkg.json
 echo "creating jail config directory"
-# shellcheck disable=SC2154
 createmount "${1}" "${global_dataset_config}"
 createmount "${1}" "${global_dataset_config}"/"${1}" /config
 

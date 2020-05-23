@@ -4,8 +4,7 @@
 initjail "$1"
 
 # Run different update procedures depending on Plex vs Plex Beta
-	# shellcheck disable=SC2154
-if [ "$plex_plexpass" == "true" ]; then
+	if [ "$plex_plexpass" == "true" ]; then
 	echo "beta enabled in config.yml... using plex beta for update..."
 	iocage exec "$1" service plexmediaserver_plexpass stop
 	# Plex is updated using PKG already, this is mostly a placeholder

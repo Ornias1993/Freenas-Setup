@@ -10,7 +10,6 @@
 initjail "$1"
 
 # Mount and configure proper configuration location
-# shellcheck disable=SC2154
 cp -rf "${includes_dir}/influxd.conf" "/mnt/${global_dataset_config}/${1}/influxd.conf"
 iocage exec "${1}" mkdir -p /config/db/data /config/db/meta /config/db/wal
 iocage exec "${1}" chown -R influxd:influxd /config/db
@@ -23,6 +22,5 @@ sleep 15
 
 # Done!
 echo "Installation complete!"
-# shellcheck disable=SC2154
 echo "You may connect InfluxDB plugins to the InfluxDB jail at http://${ip4_addr%/*}:8086."
 echo ""

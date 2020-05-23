@@ -5,7 +5,6 @@ initjail "$1"
 
 # Install includes fstab
 iocage exec "${1}" mkdir -p /mnt/includes
-# shellcheck disable=SC2154
 iocage fstab -a "${1}" "${includes_dir}" /mnt/includes nullfs rw 0 0
 
 
@@ -23,9 +22,7 @@ fi
 echo "Copying Caddyfile for no SSL"
 iocage exec "${1}" cp -f /mnt/includes/caddy /usr/local/etc/rc.d/
 iocage exec "${1}" cp -f /mnt/includes/Caddyfile /usr/local/www/Caddyfile
-# shellcheck disable=SC2154
 iocage exec "${1}" sed -i '' "s/yourhostnamehere/${host_name}/" /usr/local/www/Caddyfile
-# shellcheck disable=SC2154
 iocage exec "${1}" sed -i '' "s/JAIL-IP/${ip4_addr%/*}/" /usr/local/www/Caddyfile
 
 # Don't need /mnt/includes any more, so unmount it

@@ -111,7 +111,6 @@ for configpath in "${SCRIPT_DIR}"/blueprints/*/config.yml; do ! eval $(parse_yam
 eval $(parse_yaml "${SCRIPT_DIR}/includes/global.yml")
 eval $(parse_yaml "${SCRIPT_DIR}/config.yml")
 
-# shellcheck disable=SC2154
 if [ "${global_version}" != "1.2" ]; then
 	echo "You are using old config.yml synatx."
 	echo "Please check the wiki for required changes"

@@ -20,7 +20,6 @@ DNS_ENV="jail_${1}_dns_env"
 DB_TYPE="jail_${1}_db_type"
 DB_TYPE="${!DB_TYPE:-mariadb}"
 DB_JAIL="jail_${1}_db_jail"
-# shellcheck disable=SC2154
 DB_HOST="jail_${!DB_JAIL}_ip4_addr"
 DB_HOST="${!DB_HOST%/*}:3306"
 
@@ -55,7 +54,6 @@ if [ -z "${!DB_PASSWORD}" ]; then
   exit 1
 fi
 
-# shellcheck disable=SC2154
 if [ -z "${!TIME_ZONE}" ]; then
   echo 'Configuration error: !TIME_ZONE must be set'
   exit 1
@@ -85,7 +83,6 @@ if [ "$CERT_TYPE" == "DNS_CERT" ]; then
 fi  
 
 # Make sure DB_PATH is empty -- if not, MariaDB will choke
-# shellcheck disable=SC2154
 if [ "$(ls -A "/mnt/${global_dataset_config}/${1}/config")" ]; then
 	echo "Reinstall of Nextcloud detected... "
 	REINSTALL="true"
@@ -105,7 +102,6 @@ createmount "${1}" "${global_dataset_config}"/"${1}"/files /config/files
 
 # Install includes fstab
 iocage exec "${1}" mkdir -p /mnt/includes
-# shellcheck disable=SC2154
 iocage fstab -a "${1}" "${includes_dir}" /mnt/includes nullfs rw 0 0
 
 
@@ -166,8 +162,7 @@ if [ "$CERT_TYPE" == "SELFSIGNED_CERT" ] && [ ! -f "/mnt/${global_dataset_config
 		echo "cert folder not existing... creating..."
 		iocage exec "${1}" mkdir /config/ssl
 	fi
-	# shellcheck disable=SC2154
-	openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=${host_name}" -keyout "${includes_dir}"/privkey.pem -out "${includes_dir}"/fullchain.pem
+		openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=${host_name}" -keyout "${includes_dir}"/privkey.pem -out "${includes_dir}"/fullchain.pem
 	iocage exec "${1}" cp /mnt/includes/privkey.pem /config/ssl/privkey.pem
 	iocage exec "${1}" cp /mnt/includes/fullchain.pem /config/ssl/fullchain.pem
 fi
@@ -199,7 +194,6 @@ iocage exec "${1}" cp -f /mnt/includes/caddy.rc /usr/local/etc/rc.d/caddy
 
 iocage exec "${1}" sed -i '' "s/yourhostnamehere/${host_name}/" /usr/local/www/Caddyfile
 iocage exec "${1}" sed -i '' "s/DNS-PLACEHOLDER/${DNS_SETTING}/" /usr/local/www/Caddyfile
-# shellcheck disable=SC2154
 iocage exec "${1}" sed -i '' "s/JAIL-IP/${ip4_addr%/*}/" /usr/local/www/Caddyfile
 iocage exec "${1}" sed -i '' "s|mytimezone|${!TIME_ZONE}|" /usr/local/etc/php.ini
 
