@@ -1,6 +1,8 @@
 #!/usr/local/bin/bash
 # This file contains the install script for plex
 
+initjail "$1"
+
 iocage exec plex mkdir -p /usr/local/etc/pkg/repos
 
 # Change to to more frequent FreeBSD repo to stay up-to-date with plex more.

@@ -1,6 +1,8 @@
 #!/usr/local/bin/bash
 # This file contains the update script for jackett
 
+initjail "$1"
+
 iocage exec "$1" service jackett stop
 #TODO insert code to update jacket itself here
 iocage exec "$1" chown -R jackett:jackett /usr/local/share/Jackett /config

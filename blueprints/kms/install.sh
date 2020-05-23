@@ -1,6 +1,8 @@
 #!/usr/local/bin/bash
 # This file contains the install script for KMS
 
+initjail "$1"
+
 iocage exec "$1" svn checkout https://github.com/SystemRage/py-kms/trunk/py-kms /usr/local/share/py-kms
 iocage exec "$1" "pw user add kms -c kms -u 666 -d /nonexistent -s /usr/bin/nologin"
 iocage exec "$1" chown -R kms:kms /usr/local/share/py-kms /config

@@ -2,6 +2,8 @@
 # This script installs the current release of Nextcloud into a create jail
 # Based on the example by danb35: https://github.com/danb35/freenas-iocage-nextcloud
 
+initjail "$1"
+
 # Initialise defaults
 # General Defaults
 JAIL_IP="jail_${1}_ip4_addr"

@@ -1,8 +1,10 @@
 #!/usr/local/bin/bash
 # This file contains the install script for radarr
 
+initjail "$1"
+
 # Check if dataset for completed download and it parent dataset exist, create if they do not.
-# shellcheck disable=SC2154
+	# shellcheck disable=SC2154
 createmount "$1" "${global_dataset_downloads}"
 createmount "$1" "${global_dataset_downloads}"/complete /mnt/fetched
 

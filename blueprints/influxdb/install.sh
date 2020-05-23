@@ -7,6 +7,8 @@
 #
 #####
 
+initjail "$1"
+
 # Initialise variables
 # shellcheck disable=SC2154
 JAIL_IP="jail_${1}_ip4_addr"

@@ -1,8 +1,10 @@
 #!/usr/local/bin/bash
 # This file contains the install script for unifi-controller & unifi-poller
 
+initjail "$1"
+
 # Initialize variables
-# shellcheck disable=SC2154
+	# shellcheck disable=SC2154
 JAIL_IP="jail_${1}_ip4_addr"
 JAIL_IP="${!JAIL_IP%/*}"
 

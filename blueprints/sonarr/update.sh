@@ -1,6 +1,8 @@
 #!/usr/local/bin/bash
 # This file contains the update script for sonarr
 
+initjail "$1"
+
 iocage exec "$1" service sonarr stop
 #TODO insert code to update sonarr itself here
 iocage exec "$1" chown -R sonarr:sonarr /usr/local/share/NzbDrone /config

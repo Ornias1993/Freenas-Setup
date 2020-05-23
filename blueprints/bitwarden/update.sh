@@ -3,6 +3,8 @@
 # Due to it being build from scratch or downloaded directly to execution dir, 
 # Update for Bitwarden is pretty similair to installation
 
+initjail "$1"
+
 # Initialise defaults
 JAIL_IP="jail_${1}_ip4_addr"
 JAIL_IP="${!JAIL_IP%/*}"

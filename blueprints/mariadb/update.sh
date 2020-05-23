@@ -1,6 +1,8 @@
 #!/usr/local/bin/bash
 # This file contains the update script for mariadb
 
+initjail "$1"
+
 # shellcheck disable=SC2154
 JAIL_IP="jail_${1}_ip4_addr"
 JAIL_IP="${!JAIL_IP%/*}"

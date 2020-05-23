@@ -2,6 +2,8 @@
 # This file contains the update script for unifi
 # Unifi Controller is updated through pkg, Unifi-Poller is not. This script updates Unifi-Poller
 
+initjail "$1"
+
 FILE_NAME=$(curl -s https://api.github.com/repos/unifi-poller/unifi-poller/releases/latest | jq -r ".assets[] | select(.name | contains(\"amd64.txz\")) | .name")
 DOWNLOAD=$(curl -s https://api.github.com/repos/unifi-poller/unifi-poller/releases/latest | jq -r ".assets[] | select(.name | contains(\"amd64.txz\")) | .browser_download_url")
 

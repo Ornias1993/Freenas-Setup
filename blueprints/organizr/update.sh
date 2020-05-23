@@ -1,6 +1,8 @@
 #!/usr/local/bin/bash
 # This file contains the update script for Organizr
 
+initjail "$1"
+
 iocage exec "$1" service nginx stop
 iocage exec "$1" service php-fpm stop
 # TODO setup cli update for Organizr here.

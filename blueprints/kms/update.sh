@@ -1,6 +1,8 @@
 #!/usr/local/bin/bash
 # This file contains the update script for KMS
 
+initjail "$1"
+
 iocage exec "$1" service py_kms stop
 iocage exec "$1" svn checkout https://github.com/SystemRage/py-kms/trunk/py-kms /usr/local/share/py-kms
 iocage exec "$1" chown -R kms:kms /usr/local/share/py-kms /config

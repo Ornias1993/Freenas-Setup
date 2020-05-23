@@ -1,8 +1,10 @@
 #!/usr/local/bin/bash
 # This file contains the install script for transmission
 
+initjail "$1"
+
 # Check if dataset Downloads dataset exist, create if they do not.
-# shellcheck disable=SC2154
+	# shellcheck disable=SC2154
 createmount "$1" "${global_dataset_downloads}" /mnt/downloads
 
 # Check if dataset Complete Downloads dataset exist, create if they do not.

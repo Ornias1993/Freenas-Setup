@@ -1,6 +1,8 @@
 #!/usr/local/bin/bash
 # This file contains the update script for lidarr
 
+initjail "$1"
+
 iocage exec "$1" service lidarr stop
 #TODO insert code to update lidarr itself here
 iocage exec "$1" chown -R lidarr:lidarr /usr/local/share/lidarr /config
