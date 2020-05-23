@@ -1,5 +1,5 @@
 blueprint:
   bitwarden:
     pkgs: sqlite3 nginx git sudo vim-tiny bash node npm python27-2.7.17_1 mariadb104-client
-    vars:
-    reqvars: ip4_addr
+    vars: admin_token link_mariadb mariadb_database mariadb_user mariadb_password
+    reqvars: ip4_addr link_mariadb mariadb_password

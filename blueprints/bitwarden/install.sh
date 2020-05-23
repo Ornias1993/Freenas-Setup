@@ -1,40 +1,19 @@
 #!/usr/local/bin/bash
 # This file contains the install script for bitwarden
 
+#init jail
 initjail "$1"
 
 # Initialise defaults
+admin_token="${admin_token:-$(openssl rand -base64 16)}"
+mariadb_database="${mariadb_database:-$1}"
+mariadb_user="${mariadb_user:-$1}"
 
-DB_DATABASE="jail_${1}_db_database"
-DB_DATABASE="${!DB_DATABASE:-$1}"
 
-DB_USER="jail_${1}_db_user"
-DB_USER="${!DB_USER:-$DB_DATABASE}"
-
-INSTALL_TYPE="jail_${1}_db_type"
-INSTALL_TYPE="${!INSTALL_TYPE:-mariadb}"
-
-DB_JAIL="jail_${1}_db_jail"
-DB_HOST="jail_${!DB_JAIL}_ip4_addr"
+#TODO LINK
+DB_HOST="jail_${link_mariadb}_ip4_addr"
 DB_HOST="${!DB_HOST%/*}:3306"
-
-DB_PASSWORD="jail_${1}_db_password"
-DB_STRING="mysql://${DB_USER}:${!DB_PASSWORD}@${DB_HOST}/${DB_DATABASE}"
-ADMIN_TOKEN="jail_${1}_admin_token"
-
-if [ -z "${!DB_PASSWORD}" ]; then
-	echo "db_password can't be empty"
-	exit 1
-fi
-
-if [ -z "${!DB_JAIL}" ]; then
-	echo "db_jail can't be empty"
-	exit 1
-fi
-
-if [ -z "${!ADMIN_TOKEN}" ]; then
-ADMIN_TOKEN=$(openssl rand -base64 16)
-fi
+DB_STRING="mysql://${mariadb_user}:${mariadb_password}@${DB_HOST}/${mariadb_database}"
 
 # install latest rust version, pkg version is outdated and can't build bitwarden_rs
 iocage exec "${1}" "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
@@ -44,15 +23,9 @@ iocage exec "${1}" mkdir -p /usr/local/share/bitwarden/src
 iocage exec "${1}" git clone https://github.com/dani-garcia/bitwarden_rs/ /usr/local/share/bitwarden/src
 TAG=$(iocage exec "${1}" "git -C /usr/local/share/bitwarden/src tag --sort=v:refname | tail -n1")
 iocage exec "${1}" "git -C /usr/local/share/bitwarden/src checkout ${TAG}"
-#TODO replace with: cargo build --features mysql --release
-if [ "${INSTALL_TYPE}" == "mariadb" ]; then
-	iocage exec "${1}" "cd /usr/local/share/bitwarden/src && $HOME/.cargo/bin/cargo build --features mysql --release"
-	iocage exec "${1}" "cd /usr/local/share/bitwarden/src && $HOME/.cargo/bin/cargo install diesel_cli --no-default-features --features mysql"
-else
-	iocage exec "${1}" "cd /usr/local/share/bitwarden/src && $HOME/.cargo/bin/cargo build --features sqlite --release"
-	iocage exec "${1}" "cd /usr/local/share/bitwarden/src && $HOME/.cargo/bin/cargo install diesel_cli --no-default-features --features sqlite-bundled"
-fi
 
+iocage exec "${1}" "cd /usr/local/share/bitwarden/src && $HOME/.cargo/bin/cargo build --features mysql --release"
+iocage exec "${1}" "cd /usr/local/share/bitwarden/src && $HOME/.cargo/bin/cargo install diesel_cli --no-default-features --features mysql"
 
 iocage exec "${1}" cp -r /usr/local/share/bitwarden/src/target/release /usr/local/share/bitwarden/bin
 
@@ -78,9 +51,9 @@ if [ -f "/mnt/${global_dataset_config}/${1}/bitwarden.log" ]; then
 	echo "Reinstall of Bitwarden detected... using existing config and database"
 elif [ "${INSTALL_TYPE}" == "mariadb" ]; then
 	echo "No config detected, doing clean install, utilizing the Mariadb database ${DB_HOST}"
-	iocage exec "${!DB_JAIL}" mysql -u root -e "CREATE DATABASE ${DB_DATABASE};"
-		iocage exec "${!DB_JAIL}" mysql -u root -e "GRANT ALL ON ${DB_DATABASE}.* TO ${DB_USER}@${ip4_addr%/*} IDENTIFIED BY '${!DB_PASSWORD}';"
-	iocage exec "${!DB_JAIL}" mysqladmin reload
+	iocage exec "${link_mariadb}" mysql -u root -e "CREATE DATABASE ${mariadb_database};"
+		iocage exec "${link_mariadb}" mysql -u root -e "GRANT ALL ON ${mariadb_database}.* TO ${mariadb_user}@${ip4_addr%/*} IDENTIFIED BY '${mariadb_password}';"
+	iocage exec "${link_mariadb}" mysqladmin reload
 else
 	echo "No config detected, doing clean install."
 fi
@@ -91,17 +64,17 @@ iocage exec "${1}" mkdir /usr/local/etc/rc.d /usr/local/etc/rc.conf.d
 cp "${SCRIPT_DIR}"/blueprints/bitwarden/includes/bitwarden.rc /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.d/bitwarden
 cp "${SCRIPT_DIR}"/blueprints/bitwarden/includes/bitwarden.rc.conf /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.conf.d/bitwarden
 echo 'export DATABASE_URL="'"${DB_STRING}"'"' >> /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.conf.d/bitwarden
-echo 'export ADMIN_TOKEN="'"${!ADMIN_TOKEN}"'"' >> /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.conf.d/bitwarden
+echo 'export ADMIN_TOKEN="'"${admin_token}"'"' >> /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.conf.d/bitwarden
 
-if [ "${!ADMIN_TOKEN}" == "NONE" ]; then
+if [ "${admin_token}" == "NONE" ]; then
 	echo "Admin_token set to NONE, disabling admin portal"
 else
 	echo "Admin_token set and admin portal enabled"
-	iocage exec "${1}" echo "${DB_NAME} Admin Token is ${!ADMIN_TOKEN}" > /root/"${1}"_admin_token.txt
+	iocage exec "${1}" echo "${DB_NAME} Admin Token is ${admin_token}" > /root/"${1}"_admin_token.txt
 fi
 
 iocage exec "${1}" chmod u+x /usr/local/etc/rc.d/bitwarden
 iocage exec "${1}" sysrc "bitwarden_enable=YES"
 iocage exec "${1}" service bitwarden restart
 echo "Jail ${1} finished Bitwarden install."
-echo "Admin Token is ${!ADMIN_TOKEN}"
+echo "Admin Token is ${admin_token}"
