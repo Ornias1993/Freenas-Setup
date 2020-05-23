@@ -1,18 +1,11 @@
 #!/usr/local/bin/bash
 # This script installs the current release of Mariadb and PhpMyAdmin into a created jail
-#####
-# 
-# Init and Mounts
-#
-#####
 
+#init jail
 initjail "$1"
 
 # Initialise defaults
-CERT_EMAIL="jail_${1}_cert_email"
-CERT_EMAIL="${!CERT_EMAIL:-placeholder@email.fake}"
-DB_ROOT_PASSWORD="jail_${1}_db_root_password"
-host_name="jail_${1}_host_name"
+cert_email="${cert_email:-placeholder@email.fake}"
 DL_FLAGS=""
 DNS_ENV=""
 
@@ -61,7 +54,7 @@ iocage exec "${1}" sed -i '' "s/JAIL-IP/${ip4_addr%/*}/" /usr/local/www/Caddyfil
 
 iocage exec "${1}" sysrc caddy_enable="YES"
 iocage exec "${1}" sysrc php_fpm_enable="YES"
-iocage exec "${1}" sysrc caddy_cert_email="${CERT_EMAIL}"
+iocage exec "${1}" sysrc caddy_cert_email="${cert_email}"
 iocage exec "${1}" sysrc caddy_env="${DNS_ENV}"
 
 iocage restart "${1}"
@@ -77,14 +70,14 @@ else
 	iocage exec "${1}" mysql -u root -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
 	iocage exec "${1}" mysql -u root -e "DROP DATABASE IF EXISTS test;"
 	iocage exec "${1}" mysql -u root -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';"
-	iocage exec "${1}" mysqladmin --user=root password "${!DB_ROOT_PASSWORD}"
+	iocage exec "${1}" mysqladmin --user=root password "${root_password}"
 	iocage exec "${1}" mysqladmin reload
 	fi
 iocage exec "${1}" cp -f /mnt/includes/my.cnf /root/.my.cnf
-iocage exec "${1}" sed -i '' "s|mypassword|${!DB_ROOT_PASSWORD}|" /root/.my.cnf
+iocage exec "${1}" sed -i '' "s|mypassword|${root_password}|" /root/.my.cnf
 
 # Save passwords for later reference
-iocage exec "${1}" echo "MariaDB root password is ${!DB_ROOT_PASSWORD}" > /root/"${1}"_db_password.txt
+iocage exec "${1}" echo "MariaDB root password is ${root_password}" > /root/"${1}"_db_password.txt
 	
 
 # Don't need /mnt/includes any more, so unmount it
@@ -99,7 +92,7 @@ if [ "${REINSTALL}" == "true" ]; then
 else
 	echo "Database Information"
 	echo "--------------------"
-	echo "The MariaDB root password is ${!DB_ROOT_PASSWORD}"
+	echo "The MariaDB root password is ${root_password}"
 	fi
 echo ""
 echo "All passwords are saved in /root/${1}_db_password.txt"

@@ -5,33 +5,14 @@
 initjail "$1"
 
 # Initialise defaults
-# General Defaults
-TIME_ZONE="jail_${1}_time_zone"
-
-# SSL/CERT Defaults
-CERT_TYPE="jail_${1}_cert_type"
-CERT_TYPE="${!CERT_TYPE:-SELFSIGNED_CERT}"
-CERT_EMAIL="jail_${1}_cert_email"
-CERT_EMAIL="${!CERT_EMAIL:-placeholder@email.fake}"
-DNS_PLUGIN="jail_${1}_dns_plugin"
-DNS_ENV="jail_${1}_dns_env"
+cert_type="${cert_type:-SELFSIGNED_CERT}"
+cert_email="${cert_email:-placeholder@email.fake}"
+mariadb_database="${mariadb_database:-$1}"
+mariadb_user="${!mariadb_user:-$mariadb_database}"
 
 # Database Defaults
-DB_TYPE="jail_${1}_db_type"
-DB_TYPE="${!DB_TYPE:-mariadb}"
-DB_JAIL="jail_${1}_db_jail"
-DB_HOST="jail_${!DB_JAIL}_ip4_addr"
+DB_HOST="jail_${link_mariadb}_ip4_addr"
 DB_HOST="${!DB_HOST%/*}:3306"
-
-DB_PASSWORD="jail_${1}_db_password"
-
-DB_DATABASE="jail_${1}_db_database"
-DB_DATABASE="${!DB_DATABASE:-$1}"
-
-DB_USER="jail_${1}_db_user"
-DB_USER="${!DB_USER:-$DB_DATABASE}"
-
-ADMIN_PASSWORD="jail_${1}_admin_password"
 
 #####
 # 
@@ -39,40 +20,18 @@ ADMIN_PASSWORD="jail_${1}_admin_password"
 #
 #####
 
-
-# Check that necessary variables were set by nextcloud-config
-
-if [ -z "${ADMIN_PASSWORD}" ]; then
-  echo 'Configuration error: The Nextcloud jail requires a admin_password'
-  echo 'Please reinstall using a fixed IP adress'
-  exit 1
-fi
-
-if [ -z "${!DB_PASSWORD}" ]; then
-  echo 'Configuration error: The Nextcloud Jail needs a database password'
-  echo 'Please reinstall with a defifined: db_password'
-  exit 1
-fi
-
-if [ -z "${!TIME_ZONE}" ]; then
-  echo 'Configuration error: !TIME_ZONE must be set'
-  exit 1
-fi
-
-
-
-if [ "$CERT_TYPE" != "STANDALONE_CERT" ] && [ "$CERT_TYPE" != "DNS_CERT" ] && [ "$CERT_TYPE" != "NO_CERT" ] && [ "$CERT_TYPE" != "SELFSIGNED_CERT" ]; then
+if [ "$cert_type" != "STANDALONE_CERT" ] && [ "$cert_type" != "DNS_CERT" ] && [ "$cert_type" != "NO_CERT" ] && [ "$cert_type" != "SELFSIGNED_CERT" ]; then
   echo 'Configuration error, cert_type options: STANDALONE_CERT, DNS_CERT, NO_CERT or SELFSIGNED_CERT'
   exit 1
 fi
 
-if [ "$CERT_TYPE" == "DNS_CERT" ]; then
-	if [ -z "${!DNS_PLUGIN}" ] ; then
+if [ "$cert_type" == "DNS_CERT" ]; then
+	if [ -z "${dns_plugin}" ] ; then
 		echo "DNS_PLUGIN must be set to a supported DNS provider."
 		echo "See https://caddyserver.com/docs under the heading of \"DNS Providers\" for list."
 		echo "Be sure to omit the prefix of \"tls.dns.\"."
 		exit 1
-	elif [ -z "${!DNS_ENV}" ] ; then
+	elif [ -z "${dns_env}" ] ; then
 		echo "DNS_ENV must be set to a your DNS provider\'s authentication credentials."
 		echo "See https://caddyserver.com/docs under the heading of \"DNS Providers\" for more."
 		exit 1
@@ -82,7 +41,7 @@ if [ "$CERT_TYPE" == "DNS_CERT" ]; then
 	fi 
 fi  
 
-# Make sure DB_PATH is empty -- if not, MariaDB will choke
+# Check for existing config
 if [ "$(ls -A "/mnt/${global_dataset_config}/${1}/config")" ]; then
 	echo "Reinstall of Nextcloud detected... "
 	REINSTALL="true"
@@ -90,7 +49,7 @@ fi
 
 
 #####
-	# 
+# 
 # Fstab And Mounts
 #
 #####
@@ -114,10 +73,6 @@ iocage exec "${1}" chmod -R 770 /config/files
 # Basic dependency install
 #
 #####
-
-if [ "${DB_TYPE}" = "mariadb" ]; then
-  iocage exec "${1}" pkg install -qy mariadb103-client php73-pdo_mysql php73-mysqli
-fi
 
 fetch -o /tmp https://getcaddy.com
 if ! iocage exec "${1}" bash -s personal "${DL_FLAGS}" < /tmp/getcaddy.com
@@ -156,7 +111,7 @@ iocage exec "${1}" chown -R www:www /usr/local/www/nextcloud/
 
 
 # Generate and install self-signed cert, if necessary
-if [ "$CERT_TYPE" == "SELFSIGNED_CERT" ] && [ ! -f "/mnt/${global_dataset_config}/${1}/ssl/privkey.pem" ]; then
+if [ "$cert_type" == "SELFSIGNED_CERT" ] && [ ! -f "/mnt/${global_dataset_config}/${1}/ssl/privkey.pem" ]; then
 	echo "No ssl certificate present, generating self signed certificate"
 	if [ ! -d "/mnt/${global_dataset_config}/${1}/ssl" ]; then
 		echo "cert folder not existing... creating..."
@@ -173,14 +128,14 @@ iocage exec "${1}" cp -f /mnt/includes/redis.conf /usr/local/etc/redis.conf
 iocage exec "${1}" cp -f /mnt/includes/www.conf /usr/local/etc/php-fpm.d/
 
 
-if [ "$CERT_TYPE" == "STANDALONE_CERT" ] && [ "$CERT_TYPE" == "DNS_CERT" ]; then
+if [ "$cert_type" == "STANDALONE_CERT" ] && [ "$cert_type" == "DNS_CERT" ]; then
 	iocage exec "${1}" cp -f /mnt/includes/remove-staging.sh /root/
 fi
 
-if [ "$CERT_TYPE" == "NO_CERT" ]; then
+if [ "$cert_type" == "NO_CERT" ]; then
 	echo "Copying Caddyfile for no SSL"
 	iocage exec "${1}" cp -f /mnt/includes/Caddyfile-nossl /usr/local/www/Caddyfile
-elif [ "$CERT_TYPE" == "SELFSIGNED_CERT" ]; then
+elif [ "$cert_type" == "SELFSIGNED_CERT" ]; then
 	echo "Copying Caddyfile for self-signed cert"
 	iocage exec "${1}" cp -f /mnt/includes/Caddyfile-selfsigned /usr/local/www/Caddyfile
 else
@@ -195,12 +150,12 @@ iocage exec "${1}" cp -f /mnt/includes/caddy.rc /usr/local/etc/rc.d/caddy
 iocage exec "${1}" sed -i '' "s/yourhostnamehere/${host_name}/" /usr/local/www/Caddyfile
 iocage exec "${1}" sed -i '' "s/DNS-PLACEHOLDER/${DNS_SETTING}/" /usr/local/www/Caddyfile
 iocage exec "${1}" sed -i '' "s/JAIL-IP/${ip4_addr%/*}/" /usr/local/www/Caddyfile
-iocage exec "${1}" sed -i '' "s|mytimezone|${!TIME_ZONE}|" /usr/local/etc/php.ini
+iocage exec "${1}" sed -i '' "s|mytimezone|${time_zone}|" /usr/local/etc/php.ini
 
 iocage exec "${1}" sysrc caddy_enable="YES"
-iocage exec "${1}" sysrc caddy_cert_email="${CERT_EMAIL}"
+iocage exec "${1}" sysrc caddy_cert_email="${cert_email}"
 iocage exec "${1}" sysrc caddy_SNI_default="${host_name}"
-iocage exec "${1}" sysrc caddy_env="${!DNS_ENV}"
+iocage exec "${1}" sysrc caddy_env="${dns_env}"
 
 iocage restart "${1}"
 
@@ -209,26 +164,22 @@ if [ "${REINSTALL}" == "true" ]; then
 else
 	
 	# Secure database, set root password, create Nextcloud DB, user, and password
-	if  [ "${DB_TYPE}" = "mariadb" ]; then
-		iocage exec "mariadb" mysql -u root -e "CREATE DATABASE ${DB_DATABASE};"
-		iocage exec "mariadb" mysql -u root -e "GRANT ALL ON ${DB_DATABASE}.* TO ${DB_USER}@${ip4_addr%/*} IDENTIFIED BY '${!DB_PASSWORD}';"
-		iocage exec "mariadb" mysqladmin reload
-	fi
+	iocage exec "mariadb" mysql -u root -e "CREATE DATABASE ${mariadb_database};"
+	iocage exec "mariadb" mysql -u root -e "GRANT ALL ON ${mariadb_database}.* TO ${mariadb_user}@${ip4_addr%/*} IDENTIFIED BY '${db_password}';"
+	iocage exec "mariadb" mysqladmin reload
 	
 	
 	# Save passwords for later reference
-	iocage exec "${1}" echo "${DB_NAME} root password is ${DB_ROOT_PASSWORD}" > /root/"${1}"_db_password.txt
-	iocage exec "${1}" echo "Nextcloud database password is ${!DB_PASSWORD}" >> /root/"${1}"_db_password.txt
+	iocage exec "${1}" echo "Mariadb root password is ${mariadb_password}" > /root/"${1}"_db_password.txt
+	iocage exec "${1}" echo "Nextcloud database password is ${db_password}" >> /root/"${1}"_db_password.txt
 	iocage exec "${1}" echo "Nextcloud Administrator password is ${ADMIN_PASSWORD}" >> /root/"${1}"_db_password.txt
 	
 	# CLI installation and configuration of Nextcloud
-	if [ "${DB_TYPE}" = "mariadb" ]; then
-		iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ maintenance:install --database=\"mysql\" --database-name=\"${DB_DATABASE}\" --database-user=\"${DB_USER}\" --database-pass=\"${!DB_PASSWORD}\" --database-host=\"${DB_HOST}\" --admin-user=\"admin\" --admin-pass=\"${!ADMIN_PASSWORD}\" --data-dir=\"/config/files\""
-		iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set mysql.utf8mb4 --type boolean --value=\"true\""
-	fi
+	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ maintenance:install --database=\"mysql\" --database-name=\"${mariadb_database}\" --database-user=\"${mariadb_user}\" --database-pass=\"${db_password}\" --database-host=\"${DB_HOST}\" --admin-user=\"admin\" --admin-pass=\"${admin_password}\" --data-dir=\"/config/files\""
+	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set mysql.utf8mb4 --type boolean --value=\"true\""
 	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ db:add-missing-indices"
 	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ db:convert-filecache-bigint --no-interaction"
-	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set logtimezone --value=\"${!TIME_ZONE}\""
+	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set logtimezone --value=\"${time_zone}\""
 	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set log_type --value="file"'
 	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set logfile --value="/var/log/nextcloud.log"'
 	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set loglevel --value="2"'
@@ -239,7 +190,7 @@ else
 	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set memcache.locking --value="\OC\Memcache\Redis"'
 	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwritehost --value=\"${host_name}\""
 	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwriteprotocol --value=\"https\""
-	if [ "$CERT_TYPE" == "NO_CERT" ]; then
+	if [ "$cert_type" == "NO_CERT" ]; then
 		iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"http://${host_name}/\""
 	else
 		iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"https://${host_name}/\""
@@ -265,7 +216,7 @@ iocage fstab -r "${1}" "${includes_dir}" /mnt/includes nullfs rw 0 0
 
 # Done!
 echo "Installation complete!"
-if [ "$CERT_TYPE" == "NO_CERT" ]; then
+if [ "$cert_type" == "NO_CERT" ]; then
   echo "Using your web browser, go to http://${host_name} to log in"
 else
   echo "Using your web browser, go to https://${host_name} to log in"
@@ -280,21 +231,21 @@ else
 
 	echo "Database Information"
 	echo "--------------------"
-	echo "Database user = ${DB_USER}"
-	echo "Database password = ${!DB_PASSWORD}"
+	echo "Database user = ${mariadb_user}"
+	echo "Database password = ${db_password}"
 	echo ""
 	echo "All passwords are saved in /root/${1}_db_password.txt"
 fi
 
 echo ""
-if [ "$CERT_TYPE" == "STANDALONE_CERT" ] && [ "$CERT_TYPE" == "DNS_CERT" ]; then
+if [ "$cert_type" == "STANDALONE_CERT" ] && [ "$cert_type" == "DNS_CERT" ]; then
   echo "You have obtained your Let's Encrypt certificate using the staging server."
   echo "This certificate will not be trusted by your browser and will cause SSL errors"
   echo "when you connect.  Once you've verified that everything else is working"
   echo "correctly, you should issue a trusted certificate.  To do this, run:"
   echo "iocage exec ${1}/root/remove-staging.sh"
   echo ""
-elif [ "$CERT_TYPE" == "SELFSIGNED_CERT" ]; then
+elif [ "$cert_type" == "SELFSIGNED_CERT" ]; then
   echo "You have chosen to create a self-signed TLS certificate for your Nextcloud"
   echo "installation.  This certificate will not be trusted by your browser and"
   echo "will cause SSL errors when you connect.  If you wish to replace this certificate"

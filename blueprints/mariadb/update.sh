@@ -1,7 +1,13 @@
 #!/usr/local/bin/bash
 # This file contains the update script for mariadb
 
+#init jail
 initjail "$1"
+
+# Initialise defaults
+cert_email="${cert_email:-placeholder@email.fake}"
+DL_FLAGS=""
+DNS_ENV=""
 
 # Install includes fstab
 iocage exec "${1}" mkdir -p /mnt/includes
