@@ -118,12 +118,10 @@ echo "Jail creation completed for ${1}"
 
 }
 
-# automatic update function
 initjail() {
-# shellcheck disable=SC2154
+
 blueprint=jail_${1}_blueprint
 varlist=blueprint_${!blueprint}_vars
-# shellcheck disable=SC2154
 varlist="${!varlist} ${global_jails_vars}"
 
 for var in ${!varlist}
