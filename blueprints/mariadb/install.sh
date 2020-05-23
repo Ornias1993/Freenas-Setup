@@ -62,6 +62,7 @@ iocage exec "${1}" cp -f /mnt/includes/caddy.rc /usr/local/etc/rc.d/caddy
 iocage exec "${1}" cp -f /mnt/includes/Caddyfile /usr/local/www/Caddyfile
 # shellcheck disable=SC2154
 iocage exec "${1}" sed -i '' "s/yourhostnamehere/${host_name}/" /usr/local/www/Caddyfile
+# shellcheck disable=SC2154
 iocage exec "${1}" sed -i '' "s/JAIL-IP/${ip4_addr%/*}/" /usr/local/www/Caddyfile
 
 iocage exec "${1}" sysrc caddy_enable="YES"
@@ -84,7 +85,7 @@ else
 	iocage exec "${1}" mysql -u root -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';"
 	iocage exec "${1}" mysqladmin --user=root password "${!DB_ROOT_PASSWORD}"
 	iocage exec "${1}" mysqladmin reload
-fi
+	fi
 iocage exec "${1}" cp -f /mnt/includes/my.cnf /root/.my.cnf
 iocage exec "${1}" sed -i '' "s|mypassword|${!DB_ROOT_PASSWORD}|" /root/.my.cnf
 

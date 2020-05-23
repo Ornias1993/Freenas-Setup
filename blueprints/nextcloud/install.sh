@@ -166,6 +166,7 @@ if [ "$CERT_TYPE" == "SELFSIGNED_CERT" ] && [ ! -f "/mnt/${global_dataset_config
 		echo "cert folder not existing... creating..."
 		iocage exec "${1}" mkdir /config/ssl
 	fi
+	# shellcheck disable=SC2154
 	openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=${host_name}" -keyout "${includes_dir}"/privkey.pem -out "${includes_dir}"/fullchain.pem
 	iocage exec "${1}" cp /mnt/includes/privkey.pem /config/ssl/privkey.pem
 	iocage exec "${1}" cp /mnt/includes/fullchain.pem /config/ssl/fullchain.pem
@@ -198,6 +199,7 @@ iocage exec "${1}" cp -f /mnt/includes/caddy.rc /usr/local/etc/rc.d/caddy
 
 iocage exec "${1}" sed -i '' "s/yourhostnamehere/${host_name}/" /usr/local/www/Caddyfile
 iocage exec "${1}" sed -i '' "s/DNS-PLACEHOLDER/${DNS_SETTING}/" /usr/local/www/Caddyfile
+# shellcheck disable=SC2154
 iocage exec "${1}" sed -i '' "s/JAIL-IP/${ip4_addr%/*}/" /usr/local/www/Caddyfile
 iocage exec "${1}" sed -i '' "s|mytimezone|${!TIME_ZONE}|" /usr/local/etc/php.ini
 

@@ -84,6 +84,7 @@ if [ -f "/mnt/${global_dataset_config}/${1}/bitwarden.log" ]; then
 elif [ "${INSTALL_TYPE}" == "mariadb" ]; then
 	echo "No config detected, doing clean install, utilizing the Mariadb database ${DB_HOST}"
 	iocage exec "${!DB_JAIL}" mysql -u root -e "CREATE DATABASE ${DB_DATABASE};"
+	# shellcheck disable=SC2154
 	iocage exec "${!DB_JAIL}" mysql -u root -e "GRANT ALL ON ${DB_DATABASE}.* TO ${DB_USER}@${ip4_addr%/*} IDENTIFIED BY '${!DB_PASSWORD}';"
 	iocage exec "${!DB_JAIL}" mysqladmin reload
 else
