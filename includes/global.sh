@@ -52,7 +52,7 @@ jaildhcp="jail_${1}_dhcp"
 setdhcp=${!jaildhcp}
 # shellcheck disable=SC2154
 reqvars=blueprint_${2}_reqvars
-reqvars=${!reqvars}
+reqvars=${!reqvars} + " " + ${global_jails_reqvars}
 
 for reqvar in $reqvars
 do
@@ -122,6 +122,7 @@ initjail() {
 # shellcheck disable=SC2154
 blueprint=jail_${1}_blueprint
 varlist=blueprint_${!blueprint}_vars
+varlist=${!varlist} + " " + ${global_jails_vars}
 
 for var in ${!varlist}
 do
