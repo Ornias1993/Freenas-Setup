@@ -1,7 +1,10 @@
 #!/usr/local/bin/bash
 # This file contains the update script for sonarr
 
+#init jail
 initjail "$1"
+
+# Initialise defaults
 
 iocage exec "$1" service sonarr stop
 #TODO insert code to update sonarr itself here

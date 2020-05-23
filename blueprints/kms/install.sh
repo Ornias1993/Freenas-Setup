@@ -1,7 +1,10 @@
 #!/usr/local/bin/bash
 # This file contains the install script for KMS
 
+#init jail
 initjail "$1"
+
+# Initialise defaults
 
 iocage exec "$1" svn checkout https://github.com/SystemRage/py-kms/trunk/py-kms /usr/local/share/py-kms
 iocage exec "$1" "pw user add kms -c kms -u 666 -d /nonexistent -s /usr/bin/nologin"

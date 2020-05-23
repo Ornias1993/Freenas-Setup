@@ -1,13 +1,10 @@
 #!/usr/local/bin/bash
 # This script installs the current release of InfluxDB
 
-#####
-# 
-# Init and Mounts
-#
-#####
-
+#init jail
 initjail "$1"
+
+# Initialise defaults
 
 # Mount and configure proper configuration location
 cp -rf "${includes_dir}/influxd.conf" "/mnt/${global_dataset_config}/${1}/influxd.conf"

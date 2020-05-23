@@ -1,7 +1,10 @@
 #!/usr/local/bin/bash
 # This file contains the update script for KMS
 
+#init jail
 initjail "$1"
+
+# Initialise defaults
 
 iocage exec "$1" service py_kms stop
 iocage exec "$1" svn checkout https://github.com/SystemRage/py-kms/trunk/py-kms /usr/local/share/py-kms

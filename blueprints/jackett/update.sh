@@ -1,7 +1,10 @@
 #!/usr/local/bin/bash
 # This file contains the update script for jackett
 
+#init jail
 initjail "$1"
+
+# Initialise defaults
 
 iocage exec "$1" service jackett stop
 #TODO insert code to update jacket itself here

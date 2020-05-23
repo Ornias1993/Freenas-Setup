@@ -1,7 +1,10 @@
 #!/usr/local/bin/bash
 # This file contains the install script for jackett
 
+#init jail
 initjail "$1"
+
+# Initialise defaults
 
 iocage exec "$1" "fetch https://github.com/Jackett/Jackett/releases/download/v0.11.502/Jackett.Binaries.Mono.tar.gz -o /usr/local/share"
 iocage exec "$1" "tar -xzvf /usr/local/share/Jackett.Binaries.Mono.tar.gz -C /usr/local/share"
