@@ -1,7 +1,10 @@
 #!/usr/local/bin/bash
 # This file contains the install script for Tautulli
 
+#init jail
 initjail "$1"
+
+# Initialise defaults
 
 iocage exec "$1" git clone https://github.com/Tautulli/Tautulli.git /usr/local/share/Tautulli
 iocage exec "$1" "pw user add tautulli -c tautulli -u 109 -d /nonexistent -s /usr/bin/nologin"

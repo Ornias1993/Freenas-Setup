@@ -1,7 +1,10 @@
 #!/usr/local/bin/bash
 # This file contains the update script for Organizr
 
+#init jail
 initjail "$1"
+
+# Initialise defaults
 
 iocage exec "$1" service nginx stop
 iocage exec "$1" service php-fpm stop

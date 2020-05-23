@@ -1,7 +1,10 @@
 #!/usr/local/bin/bash
 # This file contains the install script for plex
 
+#init jail
 initjail "$1"
+
+# Initialise defaults
 
 iocage exec plex mkdir -p /usr/local/etc/pkg/repos
 

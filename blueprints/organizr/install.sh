@@ -1,7 +1,10 @@
 #!/usr/local/bin/bash
 # This file contains the install script for Organizr
 
+#init jail
 initjail "$1"
+
+# Initialise defaults
 
 iocage exec "$1" sed -i '' -e 's?listen = 127.0.0.1:9000?listen = /var/run/php-fpm.sock?g' /usr/local/etc/php-fpm.d/www.conf
 iocage exec "$1" sed -i '' -e 's/;listen.owner = www/listen.owner = www/g' /usr/local/etc/php-fpm.d/www.conf
