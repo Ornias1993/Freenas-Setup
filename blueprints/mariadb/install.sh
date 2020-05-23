@@ -10,20 +10,16 @@ initjail "$1"
 
 # Initialise defaults
 # shellcheck disable=SC2154
-JAIL_IP="jail_${1}_ip4_addr"
-JAIL_IP="${!JAIL_IP%/*}"
-INCLUDES_PATH="${SCRIPT_DIR}/blueprints/mariadb/includes"
-# shellcheck disable=SC2154
 CERT_EMAIL="jail_${1}_cert_email"
 CERT_EMAIL="${!CERT_EMAIL:-placeholder@email.fake}"
 # shellcheck disable=SC2154
 DB_ROOT_PASSWORD="jail_${1}_db_root_password"
-HOST_NAME="jail_${1}_host_name"
+host_name="jail_${1}_host_name"
 DL_FLAGS=""
 DNS_ENV=""
 
 # Check that necessary variables were set by nextcloud-config
-if [ -z "${JAIL_IP}" ]; then
+if [ -z "${ip4_addr%/*}" ]; then
   echo 'Configuration error: The mariadb jail does NOT accept DHCP'
   echo 'Please reinstall using a fixed IP adress'
   exit 1
@@ -45,7 +41,7 @@ iocage exec "${1}" chown -R 88:88 /var/db/mysql
 
 # Install includes fstab
 iocage exec "${1}" mkdir -p /mnt/includes
-iocage fstab -a "${1}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
+iocage fstab -a "${1}" "${includes_dir}" /mnt/includes nullfs rw 0 0
 
 iocage exec "${1}" mkdir -p /usr/local/www/phpmyadmin
 iocage exec "${1}" chown -R www:www /usr/local/www/phpmyadmin
@@ -70,8 +66,8 @@ echo "Copying Caddyfile for no SSL"
 iocage exec "${1}" cp -f /mnt/includes/caddy.rc /usr/local/etc/rc.d/caddy
 iocage exec "${1}" cp -f /mnt/includes/Caddyfile /usr/local/www/Caddyfile
 # shellcheck disable=SC2154
-iocage exec "${1}" sed -i '' "s/yourhostnamehere/${!HOST_NAME}/" /usr/local/www/Caddyfile
-iocage exec "${1}" sed -i '' "s/JAIL-IP/${JAIL_IP}/" /usr/local/www/Caddyfile
+iocage exec "${1}" sed -i '' "s/yourhostnamehere/${host_name}/" /usr/local/www/Caddyfile
+iocage exec "${1}" sed -i '' "s/JAIL-IP/${ip4_addr%/*}/" /usr/local/www/Caddyfile
 
 iocage exec "${1}" sysrc caddy_enable="YES"
 iocage exec "${1}" sysrc php_fpm_enable="YES"
@@ -102,11 +98,11 @@ iocage exec "${1}" echo "MariaDB root password is ${!DB_ROOT_PASSWORD}" > /root/
 	
 
 # Don't need /mnt/includes any more, so unmount it
-iocage fstab -r "${1}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
+iocage fstab -r "${1}" "${includes_dir}" /mnt/includes nullfs rw 0 0
 
 # Done!
 echo "Installation complete!"
-echo "Using your web browser, go to http://${!HOST_NAME} to log in"
+echo "Using your web browser, go to http://${host_name} to log in"
 
 if [ "${REINSTALL}" == "true" ]; then
 	echo "You did a reinstall, please use your old database and account credentials"

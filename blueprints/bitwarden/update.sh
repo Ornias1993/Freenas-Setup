@@ -6,9 +6,6 @@
 initjail "$1"
 
 # Initialise defaults
-JAIL_IP="jail_${1}_ip4_addr"
-JAIL_IP="${!JAIL_IP%/*}"
-HOST_NAME="jail_${1}_host_name"
 DB_DATABASE="jail_${1}_db_datavase"
 DB_USER="jail_${1}_db_user"
 # shellcheck disable=SC2154
@@ -44,7 +41,7 @@ if [ -z "${!DB_JAIL}" ]; then
 	exit 1
 	fi
 
-if [ -z "${!JAIL_IP}" ]; then
+if [ -z "${ip4_addr%/*}" ]; then
 	echo "ip4_addr can't be empty"
 	exit 1
 fi

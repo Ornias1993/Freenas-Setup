@@ -6,11 +6,7 @@ initjail "$1"
 
 # Initialise defaults
 # General Defaults
-JAIL_IP="jail_${1}_ip4_addr"
-JAIL_IP="${!JAIL_IP%/*}"
-HOST_NAME="jail_${1}_host_name"
 TIME_ZONE="jail_${1}_time_zone"
-INCLUDES_PATH="${SCRIPT_DIR}/blueprints/nextcloud/includes"
 
 # SSL/CERT Defaults
 CERT_TYPE="jail_${1}_cert_type"
@@ -46,7 +42,7 @@ ADMIN_PASSWORD="jail_${1}_admin_password"
 
 
 # Check that necessary variables were set by nextcloud-config
-if [ -z "${JAIL_IP}" ]; then
+if [ -z "${ip4_addr%/*}" ]; then
   echo 'Configuration error: The Nextcloud jail does NOT accept DHCP'
   echo 'Please reinstall using a fixed IP adress'
   exit 1
@@ -69,8 +65,8 @@ if [ -z "${!TIME_ZONE}" ]; then
   echo 'Configuration error: !TIME_ZONE must be set'
   exit 1
 fi
-if [ -z "${!HOST_NAME}" ]; then
-  echo 'Configuration error: !HOST_NAME must be set'
+if [ -z "${host_name}" ]; then
+  echo 'Configuration error: !host_name must be set'
   exit 1
 fi
 
@@ -118,7 +114,7 @@ createmount "${1}" "${global_dataset_config}"/"${1}"/files /config/files
 
 # Install includes fstab
 iocage exec "${1}" mkdir -p /mnt/includes
-iocage fstab -a "${1}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
+iocage fstab -a "${1}" "${includes_dir}" /mnt/includes nullfs rw 0 0
 
 
 iocage exec "${1}" chown -R www:www /config/files
@@ -178,7 +174,7 @@ if [ "$CERT_TYPE" == "SELFSIGNED_CERT" ] && [ ! -f "/mnt/${global_dataset_config
 		echo "cert folder not existing... creating..."
 		iocage exec "${1}" mkdir /config/ssl
 	fi
-	openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=${!HOST_NAME}" -keyout "${INCLUDES_PATH}"/privkey.pem -out "${INCLUDES_PATH}"/fullchain.pem
+	openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=${host_name}" -keyout "${includes_dir}"/privkey.pem -out "${includes_dir}"/fullchain.pem
 	iocage exec "${1}" cp /mnt/includes/privkey.pem /config/ssl/privkey.pem
 	iocage exec "${1}" cp /mnt/includes/fullchain.pem /config/ssl/fullchain.pem
 fi
@@ -208,14 +204,14 @@ fi
 iocage exec "${1}" cp -f /mnt/includes/caddy.rc /usr/local/etc/rc.d/caddy
 
 
-iocage exec "${1}" sed -i '' "s/yourhostnamehere/${!HOST_NAME}/" /usr/local/www/Caddyfile
+iocage exec "${1}" sed -i '' "s/yourhostnamehere/${host_name}/" /usr/local/www/Caddyfile
 iocage exec "${1}" sed -i '' "s/DNS-PLACEHOLDER/${DNS_SETTING}/" /usr/local/www/Caddyfile
-iocage exec "${1}" sed -i '' "s/JAIL-IP/${JAIL_IP}/" /usr/local/www/Caddyfile
+iocage exec "${1}" sed -i '' "s/JAIL-IP/${ip4_addr%/*}/" /usr/local/www/Caddyfile
 iocage exec "${1}" sed -i '' "s|mytimezone|${!TIME_ZONE}|" /usr/local/etc/php.ini
 
 iocage exec "${1}" sysrc caddy_enable="YES"
 iocage exec "${1}" sysrc caddy_cert_email="${CERT_EMAIL}"
-iocage exec "${1}" sysrc caddy_SNI_default="${!HOST_NAME}"
+iocage exec "${1}" sysrc caddy_SNI_default="${host_name}"
 iocage exec "${1}" sysrc caddy_env="${!DNS_ENV}"
 
 iocage restart "${1}"
@@ -227,7 +223,7 @@ else
 	# Secure database, set root password, create Nextcloud DB, user, and password
 	if  [ "${DB_TYPE}" = "mariadb" ]; then
 		iocage exec "mariadb" mysql -u root -e "CREATE DATABASE ${DB_DATABASE};"
-		iocage exec "mariadb" mysql -u root -e "GRANT ALL ON ${DB_DATABASE}.* TO ${DB_USER}@${JAIL_IP} IDENTIFIED BY '${!DB_PASSWORD}';"
+		iocage exec "mariadb" mysql -u root -e "GRANT ALL ON ${DB_DATABASE}.* TO ${DB_USER}@${ip4_addr%/*} IDENTIFIED BY '${!DB_PASSWORD}';"
 		iocage exec "mariadb" mysqladmin reload
 	fi
 	
@@ -253,17 +249,17 @@ else
 	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set redis host --value="/tmp/redis.sock"'
 	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set redis port --value=0 --type=integer'
 	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set memcache.locking --value="\OC\Memcache\Redis"'
-	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwritehost --value=\"${!HOST_NAME}\""
+	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwritehost --value=\"${host_name}\""
 	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwriteprotocol --value=\"https\""
 	if [ "$CERT_TYPE" == "NO_CERT" ]; then
-		iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"http://${!HOST_NAME}/\""
+		iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"http://${host_name}/\""
 	else
-		iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"https://${!HOST_NAME}/\""
+		iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set overwrite.cli.url --value=\"https://${host_name}/\""
 	fi
 	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ config:system:set htaccess.RewriteBase --value="/"'
 	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ maintenance:update:htaccess'
-	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set trusted_domains 1 --value=\"${!HOST_NAME}\""
-	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set trusted_domains 2 --value=\"${JAIL_IP}\""
+	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set trusted_domains 1 --value=\"${host_name}\""
+	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ config:system:set trusted_domains 2 --value=\"${ip4_addr%/*}\""
 	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ app:enable encryption'
 	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ encryption:enable'
 	iocage exec "${1}" su -m www -c 'php /usr/local/www/nextcloud/occ encryption:disable'
@@ -277,14 +273,14 @@ iocage exec "${1}" su -m www -c 'php -f /usr/local/www/nextcloud/cron.php'
 iocage exec "${1}" crontab -u www /mnt/includes/www-crontab
 
 # Don't need /mnt/includes any more, so unmount it
-iocage fstab -r "${1}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
+iocage fstab -r "${1}" "${includes_dir}" /mnt/includes nullfs rw 0 0
 
 # Done!
 echo "Installation complete!"
 if [ "$CERT_TYPE" == "NO_CERT" ]; then
-  echo "Using your web browser, go to http://${!HOST_NAME} to log in"
+  echo "Using your web browser, go to http://${host_name} to log in"
 else
-  echo "Using your web browser, go to https://${!HOST_NAME} to log in"
+  echo "Using your web browser, go to https://${host_name} to log in"
 fi
 
 if [ "${REINSTALL}" == "true" ]; then

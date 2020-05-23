@@ -4,10 +4,6 @@
 initjail "$1"
 
 # Initialize variables
-	# shellcheck disable=SC2154
-JAIL_IP="jail_${1}_ip4_addr"
-JAIL_IP="${!JAIL_IP%/*}"
-
 # shellcheck disable=SC2154
 DB_JAIL="jail_${1}_db_jail"
 
@@ -34,7 +30,6 @@ UP_USER="${!UP_USER:-$1}"
 
 # shellcheck disable=SC2154
 UP_PASS="jail_${1}_up_password"
-INCLUDES_PATH="${SCRIPT_DIR}/blueprints/unifi/includes"
 
 if [ -z "${!DB_PASS}" ]; then
 	echo "up_db_password can't be empty"
@@ -56,18 +51,18 @@ iocage exec "${1}" mkdir -p /config/controller/mongodb
 iocage exec "${1}" cp -Rp /usr/local/share/java/unifi /config/controller
 iocage exec "${1}" chown -R mongodb:mongodb /config/controller/mongodb
 # shellcheck disable=SC2154
-cp "${INCLUDES_PATH}"/mongodb.conf /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc
+cp "${includes_dir}"/mongodb.conf /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc
 # shellcheck disable=SC2154
-cp "${INCLUDES_PATH}"/rc/mongod.rc /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.d/mongod
+cp "${includes_dir}"/rc/mongod.rc /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.d/mongod
 # shellcheck disable=SC2154
-cp "${INCLUDES_PATH}"/rc/unifi.rc /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.d/unifi
+cp "${includes_dir}"/rc/unifi.rc /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.d/unifi
 iocage exec "${1}" sysrc unifi_enable=YES
 iocage exec "${1}" service unifi start
 
 # shellcheck disable=SC2154
 if [[ ! "${!POLLER}" ]]; then
   echo "Installation complete!"
-  echo "Unifi Controller is accessible at https://${JAIL_IP}:8443."
+  echo "Unifi Controller is accessible at https://${ip4_addr%/*}:8443."
 else
   # Check if influxdb container exists, create unifi database if it does, error if it is not.
   echo "Checking if the database jail and database exist..."
@@ -99,9 +94,9 @@ else
   # Install downloaded Unifi-Poller package, configure and enable 
   iocage exec "${1}" pkg install -qy /config/"${FILE_NAME}"
   # shellcheck disable=SC2154
-  cp "${INCLUDES_PATH}"/up.conf /mnt/"${global_dataset_config}"/"${1}"
+  cp "${includes_dir}"/up.conf /mnt/"${global_dataset_config}"/"${1}"
   # shellcheck disable=SC2154
-  cp "${INCLUDES_PATH}"/rc/unifi_poller.rc /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.d/unifi_poller
+  cp "${includes_dir}"/rc/unifi_poller.rc /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.d/unifi_poller
   chmod +x /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.d/unifi_poller
   iocage exec "${1}" sed -i '' "s|influxdbuser|${DB_USER}|" /config/up.conf
   iocage exec "${1}" sed -i '' "s|influxdbpass|${!DB_PASS}|" /config/up.conf
@@ -115,7 +110,7 @@ else
   iocage exec "${1}" service unifi_poller start
 
   echo "Installation complete!"
-  echo "Unifi Controller is accessible at https://${JAIL_IP}:8443."
+  echo "Unifi Controller is accessible at https://${ip4_addr%/*}:8443."
   echo "Please login to the Unifi Controller and add ${UP_USER} as a read-only user."
   echo "In Grafana, add Unifi-Poller as a data source."
 fi

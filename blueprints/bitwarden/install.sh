@@ -4,9 +4,6 @@
 initjail "$1"
 
 # Initialise defaults
-JAIL_IP="jail_${1}_ip4_addr"
-JAIL_IP="${!JAIL_IP%/*}"
-HOST_NAME="jail_${1}_host_name"
 
 DB_DATABASE="jail_${1}_db_database"
 DB_DATABASE="${!DB_DATABASE:-$1}"
@@ -39,7 +36,7 @@ if [ -z "${!DB_JAIL}" ]; then
 	exit 1
 fi
 
-if [ -z "${!JAIL_IP}" ]; then
+if [ -z "${ip4_addr%/*}" ]; then
 	echo "ip4_addr can't be empty"
 	exit 1
 fi
@@ -92,7 +89,7 @@ if [ -f "/mnt/${global_dataset_config}/${1}/bitwarden.log" ]; then
 elif [ "${INSTALL_TYPE}" == "mariadb" ]; then
 	echo "No config detected, doing clean install, utilizing the Mariadb database ${DB_HOST}"
 	iocage exec "${!DB_JAIL}" mysql -u root -e "CREATE DATABASE ${DB_DATABASE};"
-	iocage exec "${!DB_JAIL}" mysql -u root -e "GRANT ALL ON ${DB_DATABASE}.* TO ${DB_USER}@${JAIL_IP} IDENTIFIED BY '${!DB_PASSWORD}';"
+	iocage exec "${!DB_JAIL}" mysql -u root -e "GRANT ALL ON ${DB_DATABASE}.* TO ${DB_USER}@${ip4_addr%/*} IDENTIFIED BY '${!DB_PASSWORD}';"
 	iocage exec "${!DB_JAIL}" mysqladmin reload
 else
 	echo "No config detected, doing clean install."

@@ -129,6 +129,7 @@ do
     declare -g "${var}=${!value}"
 	echo "Set variable $var to ${!var}"
 done
+declare -g "includes_dir=${SCRIPT_DIR}/blueprints/${!blueprint}/includes"
 }
 export -f initjail
 
