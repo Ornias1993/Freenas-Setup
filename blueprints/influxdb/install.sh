@@ -23,5 +23,6 @@ sleep 15
 
 # Done!
 echo "Installation complete!"
+# shellcheck disable=SC2154
 echo "You may connect InfluxDB plugins to the InfluxDB jail at http://${ip4_addr%/*}:8086."
 echo ""

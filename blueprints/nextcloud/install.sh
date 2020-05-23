@@ -42,11 +42,6 @@ ADMIN_PASSWORD="jail_${1}_admin_password"
 
 
 # Check that necessary variables were set by nextcloud-config
-if [ -z "${ip4_addr%/*}" ]; then
-  echo 'Configuration error: The Nextcloud jail does NOT accept DHCP'
-  echo 'Please reinstall using a fixed IP adress'
-  exit 1
-fi
 
 if [ -z "${ADMIN_PASSWORD}" ]; then
   echo 'Configuration error: The Nextcloud jail requires a admin_password'
@@ -63,10 +58,6 @@ fi
 # shellcheck disable=SC2154
 if [ -z "${!TIME_ZONE}" ]; then
   echo 'Configuration error: !TIME_ZONE must be set'
-  exit 1
-fi
-if [ -z "${host_name}" ]; then
-  echo 'Configuration error: !host_name must be set'
   exit 1
 fi
 
@@ -114,6 +105,7 @@ createmount "${1}" "${global_dataset_config}"/"${1}"/files /config/files
 
 # Install includes fstab
 iocage exec "${1}" mkdir -p /mnt/includes
+# shellcheck disable=SC2154
 iocage fstab -a "${1}" "${includes_dir}" /mnt/includes nullfs rw 0 0
 
 

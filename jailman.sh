@@ -10,7 +10,7 @@ export SCRIPT_DIR
 echo "Working directory for jailman.sh is: ${SCRIPT_DIR}"
 
 #Includes
-# shellcheck source=global.sh
+# shellcheck source=includes/global.sh
 source "${SCRIPT_DIR}/includes/global.sh"
 
 # Check for root privileges
@@ -108,8 +108,8 @@ export global_dataset_iocage
 # Parse the Config YAML
 # shellcheck disable=SC2046
 for configpath in "${SCRIPT_DIR}"/blueprints/*/config.yml; do ! eval $(parse_yaml "${configpath}"); done
-eval "$(parse_yaml ${SCRIPT_DIR}/includes/global.yml)"
-eval "$(parse_yaml ${SCRIPT_DIR}/config.yml)"
+eval $(parse_yaml "${SCRIPT_DIR}/includes/global.yml")
+eval $(parse_yaml "${SCRIPT_DIR}/config.yml")
 
 # shellcheck disable=SC2154
 if [ "${global_version}" != "1.2" ]; then

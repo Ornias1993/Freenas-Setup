@@ -18,12 +18,6 @@ host_name="jail_${1}_host_name"
 DL_FLAGS=""
 DNS_ENV=""
 
-# Check that necessary variables were set by nextcloud-config
-if [ -z "${ip4_addr%/*}" ]; then
-  echo 'Configuration error: The mariadb jail does NOT accept DHCP'
-  echo 'Please reinstall using a fixed IP adress'
-  exit 1
-fi
 
 # Make sure DB_PATH is empty -- if not, MariaDB/PostgreSQL will choke
 # shellcheck disable=SC2154
@@ -41,6 +35,7 @@ iocage exec "${1}" chown -R 88:88 /var/db/mysql
 
 # Install includes fstab
 iocage exec "${1}" mkdir -p /mnt/includes
+# shellcheck disable=SC2154
 iocage fstab -a "${1}" "${includes_dir}" /mnt/includes nullfs rw 0 0
 
 iocage exec "${1}" mkdir -p /usr/local/www/phpmyadmin

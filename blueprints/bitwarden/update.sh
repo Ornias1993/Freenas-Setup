@@ -41,10 +41,6 @@ if [ -z "${!DB_JAIL}" ]; then
 	exit 1
 	fi
 
-if [ -z "${ip4_addr%/*}" ]; then
-	echo "ip4_addr can't be empty"
-	exit 1
-fi
 
 if [ -z "${!ADMIN_TOKEN}" ]; then
 ADMIN_TOKEN=$(openssl rand -base64 16)
