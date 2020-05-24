@@ -116,9 +116,8 @@ initjail() {
 
 blueprint=jail_${1}_blueprint
 varlist=blueprint_${!blueprint}_vars
-varlist="${!varlist} ${global_jails_vars}"
 
-for var in ${!varlist}
+for var in ${!varlist} ${global_jails_vars}
 do
 	value="jail_${1}_$var"
     declare -g "${var}=${!value}"
