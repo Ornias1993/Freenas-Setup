@@ -1,5 +1,5 @@
 blueprint:
   example:
     pkgs: nano
-    vars: ip4_addr gateway
-    reqvars: ip4_addr
+    vars: testvar testvar2
+    reqvars: testvar
