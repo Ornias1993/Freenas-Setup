@@ -1,0 +1,94 @@
+#!/bin/sh
+#
+# Author: Kriss1981 modified by UofIRob
+#
+# PROVIDE: LazyLibrarian
+# REQUIRE: DAEMON sabnzbd
+# KEYWORD: shutdown
+#
+# Add the following lines to /etc/rc.conf to enable lazylibrarian
+#
+# lazylibrarian_enable (bool): Set to NO by default.
+#           Set it to YES to enable it.
+# lazylibrarian_user:  The user account LazyLibrarian daemon runs as what
+#           you want it to be. It uses '_sabnzbd' user by
+#           default. Do not sets it as empty or it will run
+#           as root.
+# lazylibrarian_dir:   Directory where lazylibrarian lives.
+#           Default: /usr/local/lazylibrarian
+# lazylibrarian_chdir:  Change to this directory before running lazylibrarian.
+#     Default is same as lazylibrarian_dir.
+# lazylibrarian_pid:  The name of the pidfile to create.
+#     Default is lazylibrarian.pid in lazylibrarian_dir.
+
+. /etc/rc.subr
+
+name=lazylibrarian
+rcvar=${name}_enable
+load_rc_config ${name}
+
+: ${lazylibrarian_enable:="NO"}
+: ${lazylibrarian_user:="lazylibrarian"}
+: ${lazylibrarian_group:="lazylibrarian"}
+: ${lazylibrarian_datadir:="/config"}
+: ${lazylibrarian_pid:="${lazylibrarian_datadir}/lazylibrarian.pid"}
+: ${lazylibrarian_dir:="/usr/local/share/lazylibrarian"}
+: ${lazylibrarian_chdir:="${lazylibrarian_dir}"}
+: ${lazylibrarian_conf:="${lazylibrarian_datadir}/config.ini"}
+: ${lazylibrarian_flags:=""}
+
+PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
+
+WGET="/usr/local/bin/wget"      # You need wget for this script to safely shutdown lazylibrarian.
+LLUSR=""                        # Set LazyLibrarian username (if you use one) here.
+LLPWD=""                        # Set LazyLibrarian password (if you use one) here.
+
+if [ -e "${lazylibrarian_conf}" ]; then
+    HOST=`grep -A128 "\[General\]" "${lazylibrarian_conf}"|egrep "^http_host"|perl -wple 's/^http_host = (.*)$/$1/'`
+    PORT=`grep -A128 "\[General\]" "${lazylibrarian_conf}"|egrep "^http_port"|perl -wple 's/^http_port = (.*)$/$1/'`
+else
+    HOST="localhost"
+    PORT="5299"
+fi
+
+status_cmd="${name}_status"
+stop_cmd="${name}_stop"
+
+command="${lazylibrarian_dir}/LazyLibrarian.py"
+command_args="--daemon --quiet --pidfile ${lazylibrarian_pid} --datadir ${lazylibrarian_datadir} ${lazylibrarian_flags}"
+
+# Check for wget and refuse to start without it.
+if [ ! -x "${WGET}" ]; then
+    warn "lazylibrarian not started: You need wget to safely shut down lazylibrarian."
+    exit 1
+fi
+
+# Ensure user is root when running this script.
+if [ `id -u` != "0" ]; then
+    echo "Oops, you should be root before running this!"
+    exit 1
+fi
+
+verify_lazylibrarian_pid() {
+    # Make sure the pid corresponds to the lazylibrarian process.
+    pid=`cat ${lazylibrarian_pid} 2>/dev/null`
+    ps -p ${pid} | grep -q "python ${lazylibrarian_dir}/LazyLibrarian.py"
+    return $?
+}
+
+# Try to stop lazylibrarian cleanly by calling shutdown over http.
+lazylibrarian_stop() {
+    echo "Stopping $name"
+    verify_lazylibrarian_pid
+    ${WGET} -O - -q --user=${LLUSR} --password=${LLPWD} "http://${HOST}:${PORT}/shutdown/" >/dev/null
+    if [ -n "${pid}" ]; then
+        wait_for_pids ${pid}
+        echo "Stopped"
+    fi
+}
+
+lazylibrarian_status() {
+    verify_lazylibrarian_pid && echo "$name is running as ${pid}" || echo "$name is not running"
+}
+
+run_rc_command "$1"
