@@ -20,40 +20,7 @@ DB_HOST="${!DB_HOST%/*}:3306"
 #
 #####
 
-
-
-# Check that necessary variables were set by nextcloud-config
-if [ -z "${JAIL_IP}" ]; then
-  echo 'Configuration error: The Nextcloud jail does NOT accept DHCP'
-  echo 'Please reinstall using a fixed IP adress'
-  exit 1
-fi
-
-if [ -z "${!ADMIN_PASSWORD}" ]; then
-  echo 'Configuration error: The Nextcloud jail requires a admin_password'
-  echo 'Please reinstall using a fixed IP adress'
-  exit 1
-fi
-
-if [ -z "${!DB_PASSWORD}" ]; then
-  echo 'Configuration error: The Nextcloud Jail needs a database password'
-  echo 'Please reinstall with a defifined: db_password'
-  exit 1
-fi
-
-# shellcheck disable=SC2154
-if [ -z "${!TIME_ZONE}" ]; then
-  echo 'Configuration error: !TIME_ZONE must be set'
-  exit 1
-fi
-if [ -z "${!HOST_NAME}" ]; then
-  echo 'Configuration error: !HOST_NAME must be set'
-  exit 1
-fi
-
-
-
-if [ "$CERT_TYPE" != "STANDALONE_CERT" ] && [ "$CERT_TYPE" != "DNS_CERT" ] && [ "$CERT_TYPE" != "NO_CERT" ] && [ "$CERT_TYPE" != "SELFSIGNED_CERT" ]; then
+if [ "$cert_type" != "STANDALONE_CERT" ] && [ "$cert_type" != "DNS_CERT" ] && [ "$cert_type" != "NO_CERT" ] && [ "$cert_type" != "SELFSIGNED_CERT" ]; then
   echo 'Configuration error, cert_type options: STANDALONE_CERT, DNS_CERT, NO_CERT or SELFSIGNED_CERT'
   exit 1
 fi
@@ -73,6 +40,7 @@ if [ "$cert_type" == "DNS_CERT" ]; then
 		DNS_SETTING="dns ${DNS_PLUGIN}"
 	fi 
 fi  
+
 
 #####
 # 
@@ -94,11 +62,6 @@ iocage exec "${1}" chmod -R 770 /config/files
 # Basic dependency install
 #
 #####
-
-
-if [ "${DB_TYPE}" = "mariadb" ]; then
-  iocage exec "${1}" pkg install -qy mariadb104-client php74-pdo_mysql php74-mysqli
-fi
 
 
 fetch -o /tmp https://getcaddy.com
@@ -170,6 +133,7 @@ fi
 
 cp "${includes_dir}"/caddy.rc /mnt/"${global_dataset_iocage}"/jails/"$1"/root/usr/local/etc/rc.d/caddy
 
+iocage exec "${1}" cp -f /mnt/includes/caddy.rc /usr/local/etc/rc.d/caddy
 iocage exec "${1}" sed -i '' "s/yourhostnamehere/${host_name}/" /usr/local/www/Caddyfile
 iocage exec "${1}" sed -i '' "s/DNS-PLACEHOLDER/${DNS_SETTING}/" /usr/local/www/Caddyfile
 iocage exec "${1}" sed -i '' "s/JAIL-IP/${jail_ip}/" /usr/local/www/Caddyfile
