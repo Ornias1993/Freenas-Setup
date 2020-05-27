@@ -25,9 +25,6 @@ iocage exec "$1" mkdir /usr/local/etc/rc.d
 cp "${SCRIPT_DIR}"/blueprints/lazylibrarian/includes/lazylibrarian.rc /mnt/"${global_dataset_iocage}"/jails/"$1"/root/usr/local/etc/rc.d/lazylibrarian
 iocage exec "$1" chmod u+x /usr/local/etc/rc.d/lazylibrarian
 iocage exec "$1" sysrc "lazylibrarian_enable=YES"
-iocage exec "$1" sysrc "lazylibrarian_user=lazylibrarian"
-iocage exec "$1" sysrc "lazylibrarian_dir=/usr/local/share/lazylibrarian"
-iocage exec "$1" sysrc "lazylibrarian_datadir=/config"
 iocage exec "$1" sed -i '' -e 's?/var/run/lazylibrarian/lazylibrarian.pid?/config/lazylibrarian.pid?g' /usr/local/etc/rc.d/lazylibrarian
 iocage exec "$1" "pkg update && pkg upgrade -y"
 iocage exec "$1" service lazylibrarian start
