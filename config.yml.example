@@ -109,4 +109,5 @@ jail:
     gateway: 192.168.1.1
     user: grafana
     password: grafana
+	link_influxdb
 

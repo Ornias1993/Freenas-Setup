@@ -1,5 +1,9 @@
 # Grafana
 
+#### Configuration Parameters
+- user: The default installed user for grafana. Defaults to the name of the jail if not set
+- password: The password for the default installed user for grafana. Required.
+
 ## Original README from Grafana github.
 
 ![Grafana](docs/logo-horizontal.png)

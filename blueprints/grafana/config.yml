@@ -1,3 +1,5 @@
 blueprint:
   grafana:
     pkgs: grafana5
+    vars: user password link_influxdb
+    reqvars: password
