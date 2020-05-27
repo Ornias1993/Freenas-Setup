@@ -97,6 +97,7 @@ Basic means: The same setup as a FreeNAS plugin would've, DHCP on bridge0.
 - radarr
 - lidarr
 - bazarr
+- lazylibrarian
 
 ## Get involved
 
@@ -110,9 +111,9 @@ Getting involved with JailMan and creating your own Jails, is really simple alth
 ### Making changes
 To add a jail, you need 4 things:
 
-- A jailfolder under jails/
-- an install script in the jail folder, named `install.sh`
-- an update script in the jail folder, named `update.sh`
+- A blueprintfolder under blueprint/
+- an install script in the blueprint folder, named `install.sh`
+- an update script in the blueprint folder, named `update.sh`
 - an entry in `config.yml` with the name of your jail
 
 All jails created by JailMan start with their own persistant data folder in a seperate dataset, mounted under `/config`.
