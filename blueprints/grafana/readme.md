@@ -1,9 +1,24 @@
 # Grafana
 
 #### Configuration Parameters
-- user: The default installed user for grafana. Defaults to the name of the jail if not set
-- password: The password for the default installed user for grafana. Required.
+- user (opt): The default admin user for grafana. Defaults to the name of the jail if not set
+- password (req): The password for the default installed user for grafana. Required.
+- link_influxdb (opt): set to the name of the influxdb jail to set as datasource, if desired. Additional parameters to set are: name (name of the Data Source in Grafana), database (the database in InfluxDB to connect to), user (database user, if set), password (database password, if set).
 
+```
+  grafana:
+    blueprint: grafana
+    ip4_addr: 192.168.122.100/24
+    gateway: 192.168.122.1
+    user: test
+    password: Pa$$word
+    link_influxdb: influxdb
+      name: Unifi Controller
+      database: unifi
+      user: unifi
+      password: unifi-poller
+
+```
 ## Original README from Grafana github.
 
 ![Grafana](docs/logo-horizontal.png)

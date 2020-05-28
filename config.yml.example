@@ -109,5 +109,8 @@ jail:
     gateway: 192.168.1.1
     user: grafana
     password: grafana
-	link_influxdb
-
+    link_influxdb: influxdb
+      name: Unifi Controller
+      database: unifi
+      user: unifi
+      password: unifi-poller
