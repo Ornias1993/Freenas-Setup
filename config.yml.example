@@ -107,9 +107,9 @@ jail:
     blueprint: grafana
     ip4_addr: 192.168.1.100/24
     gateway: 192.168.1.1
-    user: grafana
     password: grafana
     link_influxdb: influxdb
+    database:
       name: Unifi Controller
       database: unifi
       user: unifi
