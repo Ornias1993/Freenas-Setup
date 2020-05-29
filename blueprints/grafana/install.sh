@@ -21,11 +21,11 @@ iocage exec "${1}" chown -R grafana:grafana /config
 # Setup connection to influxdb, if necessary
 if [ -n "${link_influxdb}" ]; then
   cp "${includes_dir}"/influxdb.yaml /mnt/"${global_dataset_config}"/"${1}"/provisioning/datasources
-  iocage exec "${1}" sed -i '' "s|datasource_name|${database_name}|" /config/provisioning/datasources/influxdb.yaml
+  iocage exec "${1}" sed -i '' "s|datasource_name|${datasource_name}|" /config/provisioning/datasources/influxdb.yaml
   iocage exec "${1}" sed -i '' "s|influxdb_ip|${link_influxdb_ip4_addr%/*}|" /config/provisioning/datasources/influxdb.yaml
   iocage exec "${1}" sed -i '' "s|datasource_db|${datasource_database}|" /config/provisioning/datasources/influxdb.yaml
-  iocage exec "${1}" sed -i '' "s|datasource_user|${database_user}|" /config/provisioning/datasources/influxdb.yaml
-  iocage exec "${1}" sed -i '' "s|datasource_pass|${database_password}|" /config/provisioning/datasources/influxdb.yaml
+  iocage exec "${1}" sed -i '' "s|datasource_user|${datasource_user}|" /config/provisioning/datasources/influxdb.yaml
+  iocage exec "${1}" sed -i '' "s|datasource_pass|${datasource_password}|" /config/provisioning/datasources/influxdb.yaml
 fi
 
 # Set rc vars for startup and start grafana

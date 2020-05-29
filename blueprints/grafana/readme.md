@@ -3,12 +3,12 @@
 #### Configuration Parameters
 - password (req): The password for the default admin account (admin). Required.
 - link_influxdb (opt): set to the name of the influxdb jail to set as datasource, if desired. 
-- database_name: Grafana's name of the datasource
-- database_database: name of the database in InfluxDB to connect to
-- database_user: the database user, if set
-- database_password: the database password, if set
+- datasource_name: Grafana's name of the datasource
+- datasource_database: name of the database in InfluxDB to connect to
+- datasource_user: the database user, if set
+- datasource_password: the database password, if set
 
-##### Database options (opt) are used if you wish to automatically connect Grafana to an InfluxDB data source.
+##### Datarsource options (opt) are only used if you wish to automatically connect Grafana to an InfluxDB data source (i.e. Unifi Poller).
 
 ## Original README from Grafana github.
 
