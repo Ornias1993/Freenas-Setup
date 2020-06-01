@@ -52,7 +52,7 @@ iocage exec "${1}" sysrc php_fpm_enable="YES"
 iocage restart "${1}"
 sleep 10
 
-if [ "${reinstall}" = "true" ]; then
+if [ "${reinstall:-}" = "true" ]; then
 	echo "Reinstall detected, skipping generaion of new config and database"
 else
 	# Secure database, set root password, create Nextcloud DB, user, and password

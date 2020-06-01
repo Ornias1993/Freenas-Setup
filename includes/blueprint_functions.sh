@@ -28,7 +28,7 @@ initblueprint() {
 			fi
 
 			linkvarlist=blueprint_${linkblueprint_name}_vars
-			for linkvar in ${!linkvarlist} ${global_jails_vars}
+			for linkvar in ${!linkvarlist:-} ${global_jails_vars}
 			do
 				linkvalue="jail_${val}_${linkvar}"
 				linkval=${!linkvalue:-}
@@ -49,6 +49,7 @@ initblueprint() {
 		exit 1
 	else
 		echo "No reinstall flag detected, continuing normal install"
+		declare -g reinstall="false"
 	fi
 
 	if [ -z "${ip4_addr}" ]; then
@@ -86,14 +87,14 @@ exitblueprint() {
 	blueprint_name=jail_${jail_name}_blueprint
 	blueprint_name="jail_${jail_name}_blueprint"
 	traefik_service_port="blueprint_${!blueprint_name}_traefik_service_port"
-	traefik_service_port="${!traefik_service_port}"
+	traefik_service_port="${!traefik_service_port:-}"
 	traefik_includes="${SCRIPT_DIR}/blueprints/traefik/includes"
 	traefik_status=""
 
 	jailip4="jail_${jail_name}_ip4_addr"
 	jailgateway="jail_${jail_name}_gateway"
 	jaildhcp="jail_${jail_name}_dhcp"
-	setdhcp=${!jaildhcp}
+	setdhcp=${!jaildhcp:-}
 
 	traefik_root=/mnt/"${global_dataset_config}"/"${link_traefik}"
 	traefik_tmp=${traefik_root}/temp

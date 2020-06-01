@@ -39,14 +39,14 @@ if [ "${reinstall}" = "true" ]; then
 	echo "Reinstall of Bitwarden detected... using existing config and database"
 else
 	echo "No config detected, doing clean install, utilizing the Mariadb database ${DB_HOST}"
-	iocage exec "${link_mariadb}" mysql -u root -e "CREATE DATABASE ${mariadb_database};"
+	iocage exec "${link_mariadb}" mysql -u root -e "CREATE DATABASE ${mariadb_database};" || true
 	iocage exec "${link_mariadb}" mysql -u root -e "GRANT ALL ON ${mariadb_database}.* TO ${mariadb_user}@${jail_ip} IDENTIFIED BY '${mariadb_password}';"
 	iocage exec "${link_mariadb}" mysqladmin reload
 fi
 
 iocage exec "${1}" "pw user add bitwarden -c bitwarden -u 725 -d /nonexistent -s /usr/bin/nologin"
 iocage exec "${1}" chown -R bitwarden:bitwarden /usr/local/share/bitwarden /config
-iocage exec "${1}" mkdir /usr/local/etc/rc.d /usr/local/etc/rc.conf.d
+iocage exec "${1}" mkdir /usr/local/etc/rc.d /usr/local/etc/rc.conf.d || true
 cp -rf "${includes_dir}/bitwarden.rc" /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.d/bitwarden
 cp -rf "${includes_dir}/bitwarden.rc.conf" /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.conf.d/bitwarden
 echo 'export DATABASE_URL="'"${DB_STRING}"'"' >> /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.conf.d/bitwarden
@@ -56,7 +56,7 @@ if [ "${admin_token}" == "NONE" ]; then
 	echo "Admin_token set to NONE, disabling admin portal"
 else
 	echo "Admin_token set and admin portal enabled"
-	iocage exec "${1}" echo "${DB_NAME} Admin Token is ${admin_token}" > /root/"${1}"_admin_token.txt
+	iocage exec "${1}" echo "${mariadb_database} Admin Token is ${admin_token}" > /root/"${1}"_admin_token.txt
 fi
 
 iocage exec "${1}" chmod u+x /usr/local/etc/rc.d/bitwarden

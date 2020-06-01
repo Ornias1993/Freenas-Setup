@@ -1,4 +1,6 @@
 #!/usr/local/bin/bash
+#Set to anything other than "true" to disable auto-update
+AUTOUPDATE="true"
 
 # Important defines:
 SCRIPT_NAME="$(basename "$(test -L "${BASH_SOURCE[0]}" && readlink "${BASH_SOURCE[0]}" || echo "${BASH_SOURCE[0]}")");"
@@ -55,7 +57,10 @@ if ! [ "$(id -u)" = 0 ]; then
 fi
 
 # Auto Update
-gitupdate
+if [ "${AUTOUPDATE}" == "true" ]
+then
+	gitupdate
+fi
 
 # If no option is given, point to the help menu
 if [ $# -eq 0 ]
