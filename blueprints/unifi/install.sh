@@ -5,13 +5,9 @@
 initblueprint "$1"
 
 # Initialize variables
-influxdb_database="${influxdb_database:-$1}"
-influxdb_user="${influxdb_user:-$influxdb_database}"
+database="${database:-$1}"
+database_user="${database_user:-$database}"
 poller_user="${poller_user:-$1}"
-
-#TODO LINK
-DB_IP="jail_${link_influxdb}_ip4_addr"
-DB_IP="${!DB_IP%/*}"
 
 # Enable persistent Unifi Controller data
 iocage exec "${1}" mkdir -p /config/controller/mongodb
@@ -23,11 +19,11 @@ cp "${includes_dir}"/rc/unifi.rc /mnt/"${global_dataset_iocage}"/jails/"${1}"/ro
 iocage exec "${1}" sysrc unifi_enable=YES
 iocage exec "${1}" service unifi start
 
-if [[ ! "${poller}" ]]; then
+if [ "${poller}" == "false" ]; then
   echo "Unifi Poller not selected, skipping Unifi Poller installation."
 else
-	if [ -z "${influxdb_password}" ]; then
-	echo "influxdb_password can't be empty"
+	if [ -z "${database_password}" ]; then
+	echo "database_password can't be empty"
 	exit 1
 	fi
 
@@ -44,18 +40,18 @@ else
   echo "Installing Unifi Poller..."
   echo "Checking if the database jail and database exist..."
   if [[ -d /mnt/"${global_dataset_iocage}"/jails/"${link_influxdb}" ]]; then
-    DB_EXISTING=$(iocage exec "${link_influxdb}" curl -G http://"${DB_IP}":8086/query --data-urlencode 'q=SHOW DATABASES' | jq '.results [] | .series [] | .values []' | grep "$influxdb_database" | sed 's/"//g' | sed 's/^ *//g')
-    if [[ "$influxdb_database" == "$DB_EXISTING" ]]; then
-      echo "${link_influxdb} jail with database ${influxdb_database} already exists. Skipping database creation... "
+    DB_EXISTING=$(iocage exec "${link_influxdb}" curl -G http://"${link_influxdb_ip4_addr%/*}":8086/query --data-urlencode 'q=SHOW DATABASES' | jq '.results [] | .series [] | .values []' | grep "$database" | sed 's/"//g' | sed 's/^ *//g')
+    if [[ "${database}" == "${DB_EXISTING}" ]]; then
+      echo "${link_influxdb} jail with database ${database} already exists. Skipping database creation... "
     else
-      echo "${link_influxdb} jail exists, but database ${influxdb_database} does not. Creating database ${influxdb_database}."
-      if [[ -z "${influxdb_user}" ]] || [[ -z "${influxdb_password}" ]]; then
-        echo "Database username and password not provided. Cannot create database without credentials. Exiting..."
+      echo "${link_influxdb} jail exists, but database ${database} does not. Creating database ${database}."
+      if [[ -z "${database_password}" ]]; then
+        echo "Database password not provided. Cannot create database without credentials. Exiting..."
         exit 1
       else
         # shellcheck disable=SC2027,2086
-        iocage exec "${link_influxdb}" "curl -XPOST -u ${influxdb_user}:${influxdb_password} http://"${DB_IP}":8086/query --data-urlencode 'q=CREATE DATABASE ${influxdb_database}'"
-        echo "Database ${influxdb_database} created with username ${influxdb_user} with password ${influxdb_password}."
+        iocage exec "${link_influxdb}" "curl -XPOST -u ${database_user}:${database_password} http://"${link_influxdb_ip4_addr%/*}":8086/query --data-urlencode 'q=CREATE DATABASE ${database}'"
+        echo "Database ${database} created with username ${database_user} with password ${database_password}."
       fi
     fi
   else
@@ -73,19 +69,18 @@ else
   cp "${includes_dir}"/up.conf /mnt/"${global_dataset_config}"/"${1}"
   cp "${includes_dir}"/rc/unifi_poller.rc /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.d/unifi_poller
   chmod +x /mnt/"${global_dataset_iocage}"/jails/"${1}"/root/usr/local/etc/rc.d/unifi_poller
-  iocage exec "${1}" sed -i '' "s|influxdbuser|${influxdb_user}|" /config/up.conf
-  iocage exec "${1}" sed -i '' "s|influxdbpass|${influxdb_password}|" /config/up.conf
-  iocage exec "${1}" sed -i '' "s|unifidb|${influxdb_database}|" /config/up.conf
+  iocage exec "${1}" sed -i '' "s|influxdbuser|${database_user}|" /config/up.conf
+  iocage exec "${1}" sed -i '' "s|influxdbpass|${database_password}|" /config/up.conf
+  iocage exec "${1}" sed -i '' "s|unifidb|${database}|" /config/up.conf
   iocage exec "${1}" sed -i '' "s|unifiuser|${poller_user}|" /config/up.conf
   iocage exec "${1}" sed -i '' "s|unifipassword|${poller_password}|" /config/up.conf
-  iocage exec "${1}" sed -i '' "s|dbip|http://${DB_IP}:8086|" /config/up.conf
+  iocage exec "${1}" sed -i '' "s|dbip|http://${link_influxdb_ip4_addr%/*}:8086|" /config/up.conf
 
 
   iocage exec "${1}" sysrc unifi_poller_enable=YES
   iocage exec "${1}" service unifi_poller start
 
   echo "Please login to the Unifi Controller and add ${poller_user} as a read-only user."
-  echo "In Grafana, add Unifi-Poller as a data source."
 fi
 
 exitblueprint "$1" "Unifi Controller is now accessible at https://${jail_ip}:8443"
