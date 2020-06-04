@@ -3,13 +3,13 @@ global:
   version: 1.3
   # Relevant dataset paths, please use the ZFS dataset syntax such as: tank/apps
   dataset:
-   # dataset for internal jail config files
-   config: tank/apps
-   # Media library dataset
-   media: tank/media
-   # Parent downloads dataset 
-   # (is going to contain: Complete and Incomplete datasets for downloads)
-   downloads: tank/downloads
+    # dataset for internal jail config files
+    config: tank/apps
+    # Media library dataset
+    media: tank/media
+    # Parent downloads dataset
+    # (is going to contain: Complete and Incomplete datasets for downloads)
+    downloads: tank/downloads
 
 jail:
   plexjail:
@@ -68,17 +68,18 @@ jail:
     ip4_addr: 192.168.1.99/24
     gateway: 192.168.1.1
     time_zone: Europe/Amsterdam
-    host_name: cloud.example.com
+    domain_name: cloud.example.com
     link_mariadb: mariadbjail
     admin_password: "PUTYOUROWNADMINPASSWORDHERE"
     mariadb_password: "PLEASEALSOPUTYOURPASSWORDHEREADIFFERNTONE"
+
 
   mariadbjail:
     blueprint: mariadb
     ip4_addr: 192.168.1.98/24
     gateway: 192.168.1.1
     root_password: ReplaceThisWithYourOwnRootPAssword
-    host_name: mariadb.local.example
+    domain_name: mariadb.local.example
 
   bitwardenjail:
     blueprint: bitwarden
@@ -141,3 +142,4 @@ jail:
     blueprint: sabnzbd3
     ip4_addr: 192.168.1.99/24
     gateway: 192.168.1.1
+
