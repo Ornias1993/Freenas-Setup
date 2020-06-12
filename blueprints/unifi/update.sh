@@ -2,7 +2,7 @@
 # This file contains the update script for unifi
 # Unifi Controller is updated through pkg, Unifi-Poller is not. This script updates Unifi-Poller
 
-if [[ ! "${!POLLER}" ]]; then
+if [[ -z "${POLLER}" ]]; then
 	echo "Skipping Unifi Poller for update, not installed"
 else
 	

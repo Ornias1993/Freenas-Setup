@@ -63,7 +63,7 @@ iocage exec "${1}" sysrc unifi_enable=YES
 iocage exec "${1}" service unifi start
 
 # shellcheck disable=SC2154
-if [[ ! "${!POLLER}" ]]; then
+if [[ -z "${POLLER}" ]]; then
   echo "Installation complete!"
   echo "Unifi Controller is accessible at https://${JAIL_IP}:8443."
 else
