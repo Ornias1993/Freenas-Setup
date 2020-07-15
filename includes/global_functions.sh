@@ -27,6 +27,7 @@ jailcreate() {
 	setextra="${!blueprintextraconf:-}${!jailextraconf:+ ${!jailextraconf}}"
 	reqvars=blueprint_${blueprint}_reqvars
 	reqvars="${!reqvars:-}${global_jails_reqvars:+ ${!global_vars_reqvars}}"
+	version="$(freebsd-version | sed "s/STABLE/RELEASE/g" | sed "s/-p[0-9]*//")"
 
 	for reqvar in $reqvars
 	do
@@ -52,13 +53,13 @@ if [ -z "${setdhcp}" ] && [ -z "${!jailip4}" ] && [ -z "${!jailgateway}" ]; then
 	echo '{"pkgs":['"${pkgs}"']}' > /tmp/pkg.json
 	if [ "${setdhcp}" == "on" ] || [ "${setdhcp}" == "override" ]
 	then
-		if ! iocage create -n "${jail}" -p /tmp/pkg.json -r "${global_jails_version:?}" interfaces="${jailinterfaces}" dhcp="on" vnet="on" allow_raw_sockets="1" boot="on" ${setextra:+"$setextra"} -b
+		if ! iocage create -n "${jail}" -p /tmp/pkg.json -r "${version}" interfaces="${jailinterfaces}" dhcp="on" vnet="on" allow_raw_sockets="1" boot="on" ${setextra:+"$setextra"} -b
 		then
 			echo "Failed to create jail"
 			exit 1
 		fi
 	else
-		if ! iocage create -n "${jail}" -p /tmp/pkg.json -r "${global_jails_version}" interfaces="${jailinterfaces}" ip4_addr="vnet0|${!jailip4}" defaultrouter="${!jailgateway}" vnet="on" allow_raw_sockets="1" boot="on" ${setextra:+"$setextra"} -b
+		if ! iocage create -n "${jail}" -p /tmp/pkg.json -r "${version}" interfaces="${jailinterfaces}" ip4_addr="vnet0|${!jailip4}" defaultrouter="${!jailgateway}" vnet="on" allow_raw_sockets="1" boot="on" ${setextra:+"$setextra"} -b
 		then
 			echo "Failed to create jail"
 			exit 1
