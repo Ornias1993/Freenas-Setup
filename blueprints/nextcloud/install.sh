@@ -89,7 +89,7 @@ else
 	
 	# Save passwords for later reference
 	iocage exec "${1}" echo "Nextcloud database password is ${mariadb_password}" >> /root/"${1}"_mariadb_password.txt
-	iocage exec "${1}" echo "Nextcloud Administrator password is ${ADMIN_PASSWORD}" >> /root/"${1}"_mariadb_password.txt
+	iocage exec "${1}" echo "Nextcloud Administrator password is ${admin_password}" >> /root/"${1}"_mariadb_password.txt
 	
 	# CLI installation and configuration of Nextcloud
 	iocage exec "${1}" su -m www -c "php /usr/local/www/nextcloud/occ maintenance:install --database=\"mysql\" --database-name=\"${mariadb_database}\" --database-user=\"${mariadb_user}\" --database-pass=\"${mariadb_password}\" --database-host=\"${link_mariadb_ip4_addr%/*}:3306\" --admin-user=\"admin\" --admin-pass=\"${admin_password}\" --data-dir=\"/config/files\""
@@ -136,7 +136,7 @@ if [ "${reinstall}" = "true" ]; then
 	echo "You did a reinstall, please use your old database and account credentials"
 else
 
-	echo "Default user is admin, password is ${!ADMIN_PASSWORD}"
+	echo "Default user is admin, password is ${admin_password}"
 	echo ""
 
 	echo "Database Information"

@@ -4,6 +4,10 @@
 #init jail
 initblueprint "$1"
 
+iocage exec "$1" "fetch  https://github.com/jailmanager/jailmanager.github.io/releases/download/v0.0.1/mono-6.8.0.105.txz -o /usr/local/share"
+iocage exec "$1" pkg install -y /usr/local/share/mono-6.8.0.105.txz
+iocage exec "$1" rm /usr/local/share/mono-6.8.0.105.txz
+
 # Initialise defaults
 FILE_NAME=$(curl -s https://api.github.com/repos/Jackett/Jackett/releases/latest | jq -r ".assets[] | select(.name | contains(\"Mono.tar.gz\")) | .name")
 DOWNLOAD=$(curl -s https://api.github.com/repos/Jackett/Jackett/releases/latest | jq -r ".assets[] | select(.name | contains(\"Mono.tar.gz\")) | .browser_download_url")

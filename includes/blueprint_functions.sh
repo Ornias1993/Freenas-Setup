@@ -28,7 +28,7 @@ initblueprint() {
 			fi
 
 			linkvarlist=blueprint_${linkblueprint_name}_vars
-			for linkvar in ${!linkvarlist} ${global_jails_vars}
+			for linkvar in ${!linkvarlist:-} ${global_jails_vars}
 			do
 				linkvalue="jail_${val}_${linkvar}"
 				linkval=${!linkvalue:-}
