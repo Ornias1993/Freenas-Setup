@@ -141,7 +141,7 @@ jail:
   sabnzbd3:
     blueprint: sabnzbd3
 
-  lazylibrarian:
+  lazylibrarianjail:
     blueprint: lazylibrarian
     ip4_addr: 192.168.1.99/24
     gateway: 192.168.1.1

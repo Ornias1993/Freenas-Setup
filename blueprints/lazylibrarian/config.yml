@@ -1,4 +1,4 @@
 blueprint:
   lazylibrarian: lazylibrarian
-    traefik_service_port: 8686
-    pkgs: git wget openssl readline pcre libnghttp2 python37 py37-setuptools py37-sqlite3 py37-openssl unrar
+    traefik_service_port: 5299
+    pkgs: git wget openssl readline pcre libnghttp2 python37 python3 python py37-setuptools py37-sqlite3 py37-openssl py37-urllib3 unrar
