@@ -1,4 +1,0 @@
-blueprint:
-  sabnzbd:
-    traefik_service_port: 8080
-    pkgs: sabnzbdplus

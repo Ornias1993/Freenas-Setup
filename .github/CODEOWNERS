@@ -5,10 +5,3 @@
 /docs/  @ornias1993
 
 # Code owners for individual blueprints
-/blueprints/influxdb/ @colemamd
-/blueprints/unifi/ @colemamd
-/blueprints/grafana/ @colemamd
-/blueprints/forked_daapd/ @asmod3us
-/blueprints/sabnzbd/ @asmod3us
-/blueprints/sabnzbd3/ @asmod3us
-/blueprints/plex/includes/hw_transcoding.sh @thorsteneb

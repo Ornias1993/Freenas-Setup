@@ -1,5 +1,0 @@
-blueprint:
-  example:
-    pkgs: nano
-    vars: testvar testvar2 link_mariadb
-    reqvars: testvar
