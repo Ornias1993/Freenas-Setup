@@ -22,8 +22,8 @@ source "${SCRIPT_DIR}/includes/init_functions.sh"
 # shellcheck source=includes/global_functions.sh
 source "${SCRIPT_DIR}/includes/global_functions.sh"
 
-# shellcheck source=includes/blueprint_functions.sh
-source "${SCRIPT_DIR}/includes/blueprint_functions.sh"
+# shellcheck source=includes/plugin_functions.sh
+source "${SCRIPT_DIR}/includes/plugin_functions.sh"
 
 usage() {
 	echo "Usage:"
@@ -128,7 +128,6 @@ done
 
 # auto detect iocage install location
 global_dataset_iocage=$(zfs get -H -o value mountpoint "$(iocage get -p)"/iocage)
-global_dataset_iocage=${global_dataset_iocage#/mnt/}
 export global_dataset_iocage
 
 # load all config
@@ -146,7 +145,7 @@ if [ ${#destroyjails[@]} -gt 0 ]; then
 	for jail in "${destroyjails[@]}"
 	do
 		iocage destroy -fR "${jail}" || warn "destroy failed for ${jail}"
-		cleanupblueprint "${jail}"
+		cleanupplugin "${jail}"
 	done
 fi
 
@@ -155,27 +154,29 @@ if [ ${#installjails[@]} -gt 0 ]; then
 	echo "jails to install" "${installjails[@]}"
 	for jail in "${installjails[@]}"
 	do
-		blueprint=jail_${jail}_blueprint
-		if [ -z "${!blueprint:-}" ]
+		plugin=jail_${jail}_plugin
+		if [ -z "${!plugin:-}" ]
 		then
 			echo "Config for ${jail} in config.yml incorrect. Please check your config."
 			exit 1
-		elif [ -f "${SCRIPT_DIR}/blueprints/${!blueprint}/install.sh" ]
+		else
+			jailcreate "${jail}" "${!plugin}" 
+		fi
+		if [ -f "${global_dataset_iocage}/jails/${jail}/plugin/jailman/finish_install.sh" ]
 		then
-
-			# check blueprint install script for syntax errors
-			blueprint_installer="${SCRIPT_DIR}/blueprints/${!blueprint}/install.sh"
-			if ! bash -n "${blueprint_installer}" 2>/dev/null; then
-				echo "ERR: Blueprint install script at ${blueprint_installer} has syntax errors."
+			# check plugin install script for syntax errors
+			plugin_installer="${global_dataset_iocage}/jails/${jail}/plugin/jailman/finish_install.sh"
+			if ! bash -n "${plugin_installer}" 2>/dev/null; then
+				echo "ERR: plugin install script at ${plugin_installer} has syntax errors."
 				echo "Please report this issue to the maintainer according to docs/CODEOWNERS."
 				echo "Will not continue."
 				exit 1
 			fi
 
 			echo "Installing $jail"
-			jailcreate "${jail}" "${!blueprint}" && "${SCRIPT_DIR}"/blueprints/"${!blueprint}"/install.sh "${jail}"
+			"${global_dataset_iocage}"/jails/"${jail}"/plugin/jailman/finish_install.sh "${jail}"
 		else
-			echo "Missing blueprint ${!blueprint} for $jail in ${SCRIPT_DIR}/blueprints/${!blueprint}/install.sh"
+			echo "Missing plugin ${!plugin} for $jail in ${global_dataset_iocage}/jails/${jail}/plugin/jailman/finish_install.sh"
 			exit 1
 		fi
 	done
@@ -186,17 +187,29 @@ if [ ${#redojails[@]} -gt 0 ]; then
 	echo "jails to reinstall" "${redojails[@]}"
 	for jail in "${redojails[@]}"
 	do
-		blueprint=jail_${jail}_blueprint
-		if [ -z "${!blueprint:-}" ]
+		plugin=jail_${jail}_plugin
+		if [ -z "${!plugin:-}" ]
 		then
 			echo "Config for ${jail} in config.yml incorrect. Please check your config."
 			exit 1
-		elif [ -f "${SCRIPT_DIR}/blueprints/${!blueprint}/install.sh" ]
-		then
-			echo "Reinstalling $jail"
-			iocage destroy -fR "${jail}" && cleanupblueprint "${jail}" && jailcreate "${jail}" "${!blueprint}" && "${SCRIPT_DIR}"/blueprints/"${!blueprint}"/install.sh "${jail}"
 		else
-			echo "Missing blueprint ${!blueprint} for $jail in ${SCRIPT_DIR}/blueprints/${!blueprint}/install.sh"
+			iocage destroy -fR "${jail}" && cleanupplugin "${jail}" && jailcreate "${jail}" "${!plugin}" 
+		fi
+		if [ -f "${global_dataset_iocage}/jails/${jail}/plugin/jailman/finish_install.sh" ]
+		then
+			# check plugin install script for syntax errors
+			plugin_installer="${global_dataset_iocage}/jails/${jail}/plugin/jailman/finish_install.sh"
+			if ! bash -n "${plugin_installer}" 2>/dev/null; then
+				echo "ERR: plugin install script at ${plugin_installer} has syntax errors."
+				echo "Please report this issue to the maintainer according to docs/CODEOWNERS."
+				echo "Will not continue."
+				exit 1
+			fi
+
+			echo "Reinstalling $jail"
+			"${global_dataset_iocage}"/jails/"${jail}"/plugin/jailman/finish_install.sh "${jail}"
+		else
+			echo "Missing plugin ${!plugin} for $jail in ${global_dataset_iocage}/jails/${jail}/plugin/jailman/finish_install.sh"
 			exit 1
 		fi
 	done
@@ -207,19 +220,30 @@ if [ ${#updatejails[@]} -gt 0 ]; then
 	echo "jails to update" "${updatejails[@]}"
 	for jail in "${updatejails[@]}"
 	do
-		blueprint=jail_${jail}_blueprint
-		if [ -z "${!blueprint:-}" ]
+		plugin=jail_${jail}_plugin
+		if [ -z "${!plugin:-}" ]
 		then
 			echo "Config for ${jail} in config.yml incorrect. Please check your config."
 			exit 1
-		elif [ -f "${SCRIPT_DIR}/blueprints/${!blueprint}/update.sh" ]
-		then
-			echo "Updating $jail"
+		else
 			iocage update "${jail}"
-			iocage exec "${jail}" "pkg update && pkg upgrade -y" && "${SCRIPT_DIR}"/blueprints/"${!blueprint}"/update.sh "${jail}"
+		fi
+		if [ -f "${global_dataset_iocage}/jails/${jail}/plugin/jailman/finish_install.sh" ]
+		then
+			# check plugin install script for syntax errors
+			plugin_updater="${global_dataset_iocage}/jails/${jail}/plugin/jailman/finish_update.sh"
+			if ! bash -n "${plugin_updater}" 2>/dev/null; then
+				echo "ERR: plugin update script at ${plugin_updater} has syntax errors."
+				echo "Please report this issue to the maintainer according to docs/CODEOWNERS."
+				echo "Will not continue."
+				exit 1
+			fi
+
+			echo "Updating $jail"
+			"${global_dataset_iocage}"/jails/"${jail}"/plugin/jailman/finish_update.sh "${jail}"
 			iocage restart "${jail}"
 		else
-			echo "Missing blueprint ${!blueprint} for $jail in ${SCRIPT_DIR}/blueprints/${!blueprint}/install.sh"
+			echo "Missing plugin ${!plugin} for $jail in ${global_dataset_iocage}/jails/${jail}/plugin/jailman/finish_update.sh"
 			exit 1
 		fi
 	done
@@ -230,13 +254,25 @@ if [ ${#upgradejails[@]} -gt 0 ]; then
 	echo "jails to update" "${upgradejails[@]}"
 	for jail in "${upgradejails[@]}"
 	do
-		blueprint=jail_${jail}_blueprint
-		if [ -z "${!blueprint:-}" ]
-			then
+		plugin=jail_${jail}_plugin
+		if [ -z "${!plugin:-}" ]
+		then
 			echo "Config for ${jail} in config.yml incorrect. Please check your config."
 			exit 1
-		elif [ -f "${SCRIPT_DIR}/blueprints/${!blueprint}/update.sh" ]
+		else
+			echo "Currently Upgrading is not yet included in this script."
+		fi
+		if [ -f "${global_dataset_iocage}/jails/${jail}/plugin/jailman/finish_upgrade.sh" ]
 		then
+			# check plugin install script for syntax errors
+			plugin_upgrader="${global_dataset_iocage}/jails/${jail}/plugin/jailman/finish_upgrade.sh"
+			if ! bash -n "${plugin_upgrader}" 2>/dev/null; then
+				echo "ERR: plugin upgrade script at ${plugin_upgrader} has syntax errors."
+				echo "Please report this issue to the maintainer according to docs/CODEOWNERS."
+				echo "Will not continue."
+				exit 1
+			fi
+
 			echo "Currently Upgrading is not yet included in this script."
 		else
 			echo "Currently Upgrading is not yet included in this script."

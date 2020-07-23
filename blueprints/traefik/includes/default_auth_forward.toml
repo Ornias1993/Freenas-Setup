@@ -1,3 +1,0 @@
-[http.middlewares]
-  [http.middlewares.placeholdername-forward-auth.forwardAuth]
-    address = "placeholderauthforward"

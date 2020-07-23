@@ -69,7 +69,7 @@ strict::mode() {
 
 	# shopt -s extdebug
 	trap 'strict::failure $?' ERR
-	export SHELLOPTS # run blueprint scripts with same options
+	export SHELLOPTS # run plugin scripts with same options
 }
 export -f strict::mode
 

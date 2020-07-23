@@ -1,45 +1,46 @@
 #!/usr/local/bin/bash
 # shellcheck disable=SC1003
 
-initblueprint() {
-	# as this function is called from blueprints we need to re-enable strict mode
+initplugin() {
+	# as this function is called from plugins we need to re-enable strict mode
 	# shellcheck source=libstrict.sh
 	source "${SCRIPT_DIR}/includes/libstrict.sh"
 	strict::mode
 
-	local jail_name blueprint varlist linkblueprint linkvarlist value val linkvalue linkval
+	local jail_name plugin varlist linkplugin linkvarlist value val linkvalue linkval
 	jail_name=${1:?}
+	plugin=jail_${jail_name}_plugin
 
-	blueprint=jail_${jail_name}_blueprint
-	varlist=blueprint_${!blueprint}_vars
-
-	for var in ${!varlist:-} ${global_jails_vars}
+	varlist=$(jq -r '.jailman | .variables | .options | .[]' "${global_dataset_iocage}/jails/${jail_name}/${!plugin}.json")
+	
+	for var in ${varlist:-} ${global_jails_vars}
 	do
 		value="jail_${jail_name}_$var"
 		val=${!value:-}
 		declare -g "${var}=${val}"
-
-		if [[ "${var}" =~ ^link_.* ]] && [[ -n "${val}" ]];
+		
+		linkplugin=jail_${val}_plugin
+		if [[ "${var}" =~ ^link_.* ]] && [[ -n "${val}" ]] && [[ -n "${!linkplugin}" ]];
 		then
-			linkblueprint=jail_${val}_blueprint
-			linkblueprint_name=${!linkblueprint:-}
-			if [ -z "${linkblueprint_name}" ]; then
-				echo "ERR: a link to $val was requested but no blueprint was found for it"
+			# shellcheck disable=SC2143
+			if [ -z "$(iocage list -q | grep "${val}")" ];
+			then
+				echo "ERR: a link to $val was requested but no plugin was found for it"
+			else
+				linkvarlist=$(jq -r '.jailman | .variables | .options | .[]' "${global_dataset_iocage}/jails/${val}/${!linkplugin}.json" || echo "")
+				for linkvar in ${linkvarlist} ${global_jails_vars}
+				do
+					linkvalue="jail_${val}_${linkvar}"
+					linkval=${!linkvalue:-}
+					declare -g "${var}_${linkvar}=${linkval}"
+				done
 			fi
-
-			linkvarlist=blueprint_${linkblueprint_name}_vars
-			for linkvar in ${!linkvarlist:-} ${global_jails_vars}
-			do
-				linkvalue="jail_${val}_${linkvar}"
-				linkval=${!linkvalue:-}
-				declare -g "${var}_${linkvar}=${linkval}"
-			done
 		fi
 	done
 
-	declare -g "jail_root=/mnt/${global_dataset_iocage}/jails/${jail_name}/root"
-	declare -g "blueprint_dir=${SCRIPT_DIR}/blueprints/${!blueprint}"
-	declare -g "includes_dir=${SCRIPT_DIR}/blueprints/${!blueprint}/includes"
+	declare -g "jail_root=${global_dataset_iocage}/jails/${jail_name}/root"
+	declare -g "plugin_dir=${global_dataset_iocage}/jails/${jail_name}/plugin/jailman/"
+	declare -g "includes_dir=${plugin_dir}/includes"
 
 	if [ -f "/mnt/${global_dataset_config}/${1}/INSTALLED" ]; then
 	    echo "Reinstall detected..."
@@ -59,9 +60,9 @@ initblueprint() {
 		declare -g "jail_ip=${ip4_addr%/*}"
 	fi
 }
-export -f initblueprint
+export -f initplugin
 
-cleanupblueprint() {
+cleanupplugin() {
 	local jail_name=${1:?}
 
 	link_traefik="jail_${jail_name}_link_traefik"
@@ -73,32 +74,24 @@ cleanupblueprint() {
 		rm -f /mnt/"${global_dataset_config}"/"${link_traefik}"/dynamic/"${jail_name}"_auth_forward.toml
 	fi
 }
-export -f cleanupblueprint
+export -f cleanupplugin
 
-exitblueprint() {
-	# as this function is called from blueprints we need to re-enable strict mode
+exitplugin() {
+	# as this function is called from plugins we need to re-enable strict mode
 	# shellcheck source=libstrict.sh
 	source "${SCRIPT_DIR}/includes/libstrict.sh"
 	strict::mode
-	local jail_name status_message blueprint_name traefik_service_port traefik_includes traefik_status jailip4 jailgateway jaildhcp setdhcp traefik_root traefik_tmp traefik_dyn
+	local jail_name status_message plugin_name traefik_service_port traefik_includes traefik_status jailip4 jailgateway jaildhcp setdhcp traefik_root traefik_tmp traefik_dyn
 
 	jail_name=${1:?}
 	status_message=${2:-}
-	blueprint_name=jail_${jail_name}_blueprint
-	blueprint_name="jail_${jail_name}_blueprint"
-	traefik_service_port="blueprint_${!blueprint_name}_traefik_service_port"
-	traefik_service_port="${!traefik_service_port:-}"
-	traefik_includes="${SCRIPT_DIR}/blueprints/traefik/includes"
+	plugin_name=jail_${jail_name}_plugin
+	traefik_service_port="$(jq -r '.jailman | .traefik_service_port' "${global_dataset_iocage}/jails/${jail_name}/${!plugin_name}.json")"
 	traefik_status=""
-
 	jailip4="jail_${jail_name}_ip4_addr"
 	jailgateway="jail_${jail_name}_gateway"
 	jaildhcp="jail_${jail_name}_dhcp"
 	setdhcp=${!jaildhcp:-}
-
-	traefik_root=/mnt/"${global_dataset_config}"/"${link_traefik}"
-	traefik_tmp=${traefik_root}/temp
-	traefik_dyn=${traefik_root}/dynamic
 
 	# Check if the jail is compatible with Traefik and copy the right default-config for the job.
 	if [ -z "${link_traefik}" ]; then
@@ -109,6 +102,10 @@ exitblueprint() {
 	elif [[ ${link_traefik} =~ .*[[:space:]]$ ]]; then
 		echo "Trailing whitespace in linked traefik jail '${link_traefik}'"
 	else
+		traefik_includes="${global_dataset_iocage}/jails/${link_traefik}/plugin/includes"
+		traefik_root=/mnt/"${global_dataset_config}"/"${link_traefik}"
+		traefik_tmp=${traefik_root}/temp
+		traefik_dyn=${traefik_root}/dynamic
 		if [ -z "${ip4_addr}" ] && [ "${setdhcp}" == "override" ] && [ -n "${jail_ip}" ]; then
 			echo "Warning: Traefik with DHCP requires that the jail's assigned IP adddress stays the same."
 			echo "Please see the README for details. If you cannot guarantee static IP assignment this will"
@@ -120,12 +117,12 @@ exitblueprint() {
 		rm -f "${traefik_dyn}/${jail_name}_auth_forward.toml"
 		if [ -z "${domain_name}" ]; then
 			echo "domain_name required for connecting to traefik... please add domain_name to config.yml"
-		elif [ -f "${blueprint_dir}/traefik_custom.toml" ]; then
+		elif [ -f "${plugin_dir}/traefik_custom.toml" ]; then
 			echo "Found custom traefik configuration... Copying to traefik..."
-			cp "${blueprint_dir}/traefik_custom.toml" "${traefik_tmp}/${jail_name}.toml"
+			cp "${plugin_dir}/traefik_custom.toml" "${traefik_tmp}/${jail_name}.toml"
 			traefik_status="success"
 		elif [ -f "${includes_dir}/traefik_custom.toml" ]; then
-			echo "Found default traefik configuration for this blueprint... Copying to traefik..."
+			echo "Found default traefik configuration for this plugin... Copying to traefik..."
 			cp "${includes_dir}/traefik_custom.toml" "${traefik_tmp}/${jail_name}.toml"
 			traefik_status="preinstalled"
 		elif [ -z "${traefik_service_port}" ]; then
@@ -181,18 +178,18 @@ exitblueprint() {
 
 	# Add a file to flag the jail is INSTALLED and thus trigger reinstall on next install
 	echo "DO NOT DELETE THIS FILE" >> "/mnt/${global_dataset_config}/${jail_name}/INSTALLED"
-	echo "Jail ${jail_name} using blueprint ${!blueprint_name}, installed successfully."
+	echo "Jail ${jail_name} using plugin ${!plugin_name}, installed successfully."
 
 	# Pick the right success message to hint to user how to connect to the jail
 	if [ "${traefik_status}" = "success" ]; then
-		echo "Your jail ${jail_name} running ${!blueprint_name} is now accessible via Traefik at https://${domain_name}"
+		echo "Your jail ${jail_name} running ${!plugin_name} is now accessible via Traefik at https://${domain_name}"
 	elif [[ -n "${status_message}" ]]; then
 		echo " ${status_message}"
 	elif [ -n "${traefik_service_port}" ]; then
-		echo "Your jail ${jail_name} running ${!blueprint_name} is now accessible at http://${jail_ip}:${traefik_service_port}"
+		echo "Your jail ${jail_name} running ${!plugin_name} is now accessible at http://${jail_ip}:${traefik_service_port}"
 	else
 		echo "Please consult the wiki for instructions connecting to your newly installed jail"
 	fi
 }
-export -f exitblueprint
+export -f exitplugin
 

@@ -2,41 +2,42 @@
 # shellcheck disable=SC1003
 
 jailcreate() {
-	local jail  blueprint
+	local jail  plugin
 
 	jail=${1:?}
-	blueprint=${2:?}
+	plugin=${2:?}
 
-	if [ -z "$jail" ] || [ -z "$blueprint" ]; then
-		echo "jail and blueprint are required"
+	if [ -z "$jail" ] || [ -z "$plugin" ]; then
+		echo "jail and plugin are required"
+		exit 1
+	fi
+
+	# shellcheck disable=SC2143
+	if [ -z "$(iocage list -q | grep "${jail}")" ]; then
+		echo ""
+	else
+		echo "Jail ${jail} already exists..."
 		exit 1
 	fi
 
 	echo "Checking config..."
-	local blueprintpkgs blueprintports jailinterfaces jailip4 jailgateway jaildhcp setdhcp blueprintextraconf jailextraconf setextra reqvars reqvars
-
-	blueprintpkgs="blueprint_${blueprint}_pkgs"
-	blueprintports="blueprint_${blueprint}_ports"
+	local pluginrepo pluginports jailinterfaces jailip4 jailgateway jaildhcp setdhcp pluginextraconf jailextraconf setextra reqvars reqvars version
+	
+	pluginrepo="https://github.com/jailmanager/iocage-plugins.git"
+	pluginports="plugin_${plugin}_ports"
 	jailinterfaces="jail_${jail}_interfaces"
 	jailip4="jail_${jail}_ip4_addr"
 	jailgateway="jail_${jail}_gateway"
 	jaildhcp="jail_${jail}_dhcp"
 	setdhcp=${!jaildhcp:-}
-	blueprintextraconf="blueprint_${blueprint}_custom_iocage"
+	pluginextraconf="plugin_${plugin}_custom_iocage"
 	jailextraconf="jail_${jail}_custom_iocage"
-	setextra="${!blueprintextraconf:-}${!jailextraconf:+ ${!jailextraconf}}"
-	reqvars=blueprint_${blueprint}_reqvars
-	reqvars="${!reqvars:-}${global_jails_reqvars:+ ${!global_vars_reqvars}}"
+	setextra="${!pluginextraconf:-}${!jailextraconf:+ ${!jailextraconf}}"
+	
 	version="$(freebsd-version | sed "s/STABLE/RELEASE/g" | sed "s/-p[0-9]*//")"
 
-	for reqvar in $reqvars
-	do
-		varname=jail_${jail}_${reqvar}
-		if [ -z "${!varname}" ]; then
-			echo "$varname can't be empty"
-			exit 1
-		fi
-	done
+
+
 
 	if [ -z "${!jailinterfaces:-}" ]; then
 		jailinterfaces="vnet0:bridge0"
@@ -49,24 +50,30 @@ if [ -z "${setdhcp}" ] && [ -z "${!jailip4}" ] && [ -z "${!jailgateway}" ]; then
 	fi
 
 	echo "Creating jail for $jail"
-	pkgs="$(sed 's/[^[:space:]]\{1,\}/"&"/g;s/ /,/g' <<<"${global_jails_pkgs:?} ${!blueprintpkgs}")"
-	echo '{"pkgs":['"${pkgs}"']}' > /tmp/pkg.json
 	if [ "${setdhcp}" == "on" ] || [ "${setdhcp}" == "override" ]
 	then
-		if ! iocage create -n "${jail}" -p /tmp/pkg.json -r "${version}" interfaces="${jailinterfaces}" dhcp="on" vnet="on" allow_raw_sockets="1" boot="on" ${setextra:+"$setextra"} -b
+		if !  iocage fetch -g "${pluginrepo}" -P "${plugin}" -n "${jail}" -r "${version}" interfaces="${jailinterfaces}" dhcp="on" vnet="on" allow_raw_sockets="1" boot="on" ${setextra:+"$setextra"}
 		then
 			echo "Failed to create jail"
 			exit 1
 		fi
 	else
-		if ! iocage create -n "${jail}" -p /tmp/pkg.json -r "${version}" interfaces="${jailinterfaces}" ip4_addr="vnet0|${!jailip4}" defaultrouter="${!jailgateway}" vnet="on" allow_raw_sockets="1" boot="on" ${setextra:+"$setextra"} -b
+		if !  iocage fetch -g "${pluginrepo}" -P "${plugin}" -n "${jail}" -r "${version}" interfaces="${jailinterfaces}" ip4_addr="vnet0|${!jailip4}" defaultrouter="${!jailgateway}" vnet="on" allow_raw_sockets="1" boot="on" ${setextra:+"$setextra"}
 		then
 			echo "Failed to create jail"
 			exit 1
 		fi
 	fi
-
-	rm /tmp/pkg.json
+	
+	for reqvar in $(jq -r '.jailman | .variables | .required | .[]' "${global_dataset_iocage}/jails/${jail}/${plugin}.json")
+	do
+		varname=jail_${jail}_${reqvar}
+		if [ -z "${!varname:-}" ]; then
+			echo "$varname can't be empty"
+			exit 1
+		fi
+	done
+	
 	echo "creating jail config directory"
 	createmount "${jail}" "${global_dataset_config}" || exit 1
 	createmount "${jail}" "${global_dataset_config}"/"${jail}" /config || exit 1
@@ -75,12 +82,12 @@ if [ -z "${setdhcp}" ] && [ -z "${!jailip4}" ] && [ -z "${!jailgateway}" ]; then
 	createmount "${jail}" "${global_dataset_config}"/portsnap || exit 1
 	createmount "${jail}" "${global_dataset_config}"/portsnap/db /var/db/portsnap || exit 1
 	createmount "${jail}" "${global_dataset_config}"/portsnap/ports /usr/ports || exit 1
-	if [ "${!blueprintports:-}" == "true" ]
+	if [ "${!pluginports:-}" == "true" ]
 	then
 		echo "Mounting and fetching ports"
 		iocage exec "${jail}" "if [ -z /usr/ports ]; then portsnap fetch extract; else portsnap auto; fi"
 	else
-		echo "Ports not enabled for blueprint, skipping"
+		echo "Ports not enabled for plugin, skipping"
 	fi
 
 	echo "Jail creation completed for ${jail}"
@@ -125,4 +132,3 @@ createmount() {
 	fi
 }
 export -f createmount
-

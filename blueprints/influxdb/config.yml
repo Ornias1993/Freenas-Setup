@@ -1,4 +1,0 @@
-blueprint:
-  influxdb:
-    pkgs: influxdb jq
-    reqvars: ip4_addr
