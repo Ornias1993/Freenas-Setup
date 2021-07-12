@@ -1,0 +1,18 @@
+{
+	"jailman": {
+		"variables": {
+			"options": [
+				"ip4_addr",
+				"host_name",
+				"gateway",
+				"traefik_proxy",
+				"domain_name",
+				"traefik_service_port",
+				"traefik_auth_basic",
+				"traefik_auth_forward"
+			],
+			"required": []
+		}
+	},
+	"revision": "0"
+}

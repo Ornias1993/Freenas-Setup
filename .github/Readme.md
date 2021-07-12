@@ -78,9 +78,10 @@ Basic means: The same setup as a FreeNAS plugin would've, DHCP on bridge0.
 
 - organizr
 - py-kms
-- nextcloud (currently broken, fix ready for 1.3.0)
+- nextcloud
 - bitwarden
 - unifi controller
+- traefik
 
 #### Backend
 - mariadb
@@ -98,6 +99,7 @@ Basic means: The same setup as a FreeNAS plugin would've, DHCP on bridge0.
 - sonarr
 - radarr
 - lidarr
+- bazarr
 
 ## Get involved
 
